@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16
+    container_name: emotionsai_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+      POSTGRES_USER: ${POSTGRES_USER:-app_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: emotionsai_web
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - ./server:/app/server
+    command: >
+      sh -c "
+      python server/manage.py migrate &&
+      python server/manage.py runserver 0.0.0.0:8000
+      "
+
+volumes:
+  postgres_data:
