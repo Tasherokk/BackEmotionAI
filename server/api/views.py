@@ -21,7 +21,12 @@ class RegisterView(APIView):
         ser.is_valid(raise_exception=True)
         user = ser.save()
         tokens = make_token_pair(user)
-        return Response(tokens, status=status.HTTP_201_CREATED)
+
+        return Response(
+            {**tokens, "user": MeResponseSerializer(user).data},
+            status=status.HTTP_201_CREATED
+        )
+
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -31,7 +36,12 @@ class LoginView(APIView):
         ser.is_valid(raise_exception=True)
         user = ser.validated_data["user"]
         tokens = make_token_pair(user)
-        return Response(tokens, status=status.HTTP_200_OK)
+
+        return Response(
+            {**tokens, "user": MeResponseSerializer(user).data},
+            status=status.HTTP_200_OK
+        )
+
 
 class RefreshView(APIView):
     permission_classes = [permissions.AllowAny]

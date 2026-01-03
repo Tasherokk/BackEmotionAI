@@ -47,7 +47,7 @@ class RefreshRequestSerializer(serializers.Serializer):
 class MeResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "username", "name")
+        fields = ("id", "username", "name", "role")
 
 def make_token_pair(user: User) -> dict:
     refresh = RefreshToken.for_user(user)
