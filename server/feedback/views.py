@@ -29,7 +29,8 @@ class FeedbackPhotoView(APIView):
             top3=ai.get("top3", []),
             face_box=ai.get("face_box"),
             event_id=event_id,
-            department=getattr(request.user, "department", "") or "",  # если поля нет — просто ""
+            company=request.user.company,
+            department=request.user.department,
         )
 
         # 3) ответ мобилке

@@ -11,6 +11,8 @@ class RegisterRequestSerializer(serializers.Serializer):
     username = serializers.CharField()
     name = serializers.CharField(allow_blank=True, required=False)
     password = serializers.CharField(min_length=6, write_only=True)
+    company_id = serializers.IntegerField(required=False, allow_null=True)
+    department_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_username(self, value):
         v = value.strip().lower()
@@ -19,10 +21,15 @@ class RegisterRequestSerializer(serializers.Serializer):
         return v
 
     def create(self, validated_data):
+        company_id = validated_data.pop('company_id', None)
+        department_id = validated_data.pop('department_id', None)
+        
         user = User.objects.create_user(
             username=validated_data["username"],
             password=validated_data["password"],
-            name=validated_data.get("name", "")
+            name=validated_data.get("name", ""),
+            company_id=company_id,
+            department_id=department_id
         )
         return user
 
@@ -45,9 +52,12 @@ class RefreshRequestSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
 class MeResponseSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source='company.name', read_only=True, allow_null=True)
+    department_name = serializers.CharField(source='department.name', read_only=True, allow_null=True)
+    
     class Meta:
         model = User
-        fields = ("id", "username", "name", "role")
+        fields = ("id", "username", "name", "role", "company", "company_name", "department", "department_name")
 
 def make_token_pair(user: User) -> dict:
     refresh = RefreshToken.for_user(user)
