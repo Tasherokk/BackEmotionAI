@@ -1,36 +1,53 @@
 from django.db import models
+from django.conf import settings
 
-class Department(models.Model):
-    name = models.CharField(max_length=255)
+class Company(models.Model):
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
 
 
+class Department(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="departments")
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ("company", "name")
+
+    def __str__(self):
+        return f"{self.company.name} — {self.name}"
+
+
 class Event(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="events")
     title = models.CharField(max_length=255)
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return f"{self.company.name} — {self.title}"
 
-
-from django.conf import settings
-from django.db import models
 
 class Feedback(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="feedbacks")
     created_at = models.DateTimeField(auto_now_add=True)
 
     # результат модели
-    emotion = models.CharField(max_length=32)          # "angry"
-    confidence = models.FloatField()                   # 0.99
+    emotion = models.CharField(max_length=32)
+    confidence = models.FloatField()
 
-    probs = models.JSONField()                         # {"angry":0.99,...}
-    top3 = models.JSONField(null=True, blank=True)     # [{"label":"angry","prob":...}, ...]
-    face_box = models.JSONField(null=True, blank=True) # {"x1":..,"y1":..,"x2":..,"y2":..}
+    probs = models.JSONField()
+    top3 = models.JSONField(null=True, blank=True)
+    face_box = models.JSONField(null=True, blank=True)
 
-    # для будущей аналитики
-    department = models.CharField(max_length=255, blank=True, default="")  # пока строкой, без сильных изменений
-    event_id = models.IntegerField(null=True, blank=True)       
+    # аналитика
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True, related_name="feedbacks")
+    department = models.ForeignKey(Department, on_delete=models.PROTECT, null=True, blank=True, related_name="feedbacks")
+    event = models.ForeignKey(Event, on_delete=models.SET_NULL, null=True, blank=True, related_name="feedbacks")
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["emotion"]),
+        ]

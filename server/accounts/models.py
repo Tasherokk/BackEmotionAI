@@ -17,7 +17,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=Role.EMPLOYEE,
         db_index=True,
     )
-
+    company = models.ForeignKey("feedback.Company", on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
+    department = models.ForeignKey("feedback.Department", on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
+    
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
