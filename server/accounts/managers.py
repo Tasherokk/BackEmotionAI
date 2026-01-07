@@ -3,12 +3,12 @@ from django.contrib.auth.base_user import BaseUserManager
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, username: str, password: str = None, name: str = ""):
+    def create_user(self, username: str, password: str = None, name: str = "", company_id=None, department_id=None):
         if not username:
             raise ValueError("username is required")
         username = username.strip().lower()
 
-        user = self.model(username=username, name=name or "")
+        user = self.model(username=username, name=name or "", company_id=company_id, department_id=department_id)
         user.set_password(password)
         user.is_active = True
         user.save(using=self._db)
