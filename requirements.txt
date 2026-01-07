@@ -5,3 +5,5 @@ psycopg
 django-cors-headers
 django-jazzmin
 python-dotenv
+requests>=2.31
+pillow
