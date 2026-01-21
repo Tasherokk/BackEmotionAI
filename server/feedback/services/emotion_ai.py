@@ -11,6 +11,6 @@ def analyze_face(image_file) -> dict:
         "file": (image_file.name, content, image_file.content_type or "image/jpeg")
     }
 
-    r = requests.post(f"{AI_BASE_URL}/predict", files=files, timeout=20)
+    r = requests.post(f"{AI_BASE_URL}/predict", files=files, timeout=60)
     r.raise_for_status()
     return r.json()
