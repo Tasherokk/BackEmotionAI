@@ -68,12 +68,12 @@ class MeView(APIView):
 
 
 class PhotoLoginView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
     """
     Photo-based authorization endpoint.
     Accepts a photo from user, compares with their stored photo via AI service.
     Requires authentication token to identify the user.
     """
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         serializer = PhotoLoginRequestSerializer(data=request.data)
