@@ -37,10 +37,10 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
 
     # custom apps
     "accounts",
-    "api",
     "feedback"
 ]
 
@@ -131,6 +131,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Media files (User uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # IMPORTANT: custom user must be defined from start (before first migrate in new DB)
 AUTH_USER_MODEL = "accounts.User"
 
@@ -142,6 +146,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
@@ -150,6 +155,15 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Emotions AI API",
+    "DESCRIPTION": "API for Emotions AI application with face recognition and feedback system",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # CORS for Android emulator/dev

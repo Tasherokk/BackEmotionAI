@@ -10,6 +10,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     username = models.CharField(max_length=150, unique=True)
     name = models.CharField(max_length=255, blank=True, default="")
+    photo = models.ImageField(upload_to='user_photos/', null=True, blank=True)
 
     role = models.CharField(
         max_length=20,
