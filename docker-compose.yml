@@ -18,6 +18,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    volumes:
+      - media_files:/app/server/media
     depends_on:
       - db
     networks:
@@ -33,7 +35,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./server/media:/app/server/media:ro
+      - media_files:/app/server/media:ro
     depends_on:
       - web
     networks:
@@ -41,6 +43,7 @@ services:
 
 volumes:
   postgres_data:
+  media_files:
 
 networks:
   backend_network:
