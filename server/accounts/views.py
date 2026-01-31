@@ -24,10 +24,11 @@ class RegisterView(APIView):
     @extend_schema(
         request=RegisterRequestSerializer,
         responses={201: MeResponseSerializer},
-        description="Register a new user with username, password, name, and photo",
+        description="Register a new user with username, password, name, and photo. Photo is required for face recognition features.",
         examples=[
             OpenApiExample(
                 "Register Example",
+                description="Register with username, password, name and photo file",
                 value={
                     "username": "john_doe",
                     "password": "secret123",
@@ -132,7 +133,14 @@ class PhotoLoginView(APIView):
             401: {"type": "object", "properties": {"verdict": {"type": "string"}, "detail": {"type": "string"}}},
             400: {"type": "object", "properties": {"detail": {"type": "string"}}},
         },
-        description="Authorize user by comparing uploaded photo with stored photo using AI face recognition"
+        description="Authorize user by comparing uploaded photo with stored photo using AI face recognition",
+        examples=[
+            OpenApiExample(
+                "Photo Authorization",
+                description="Upload a photo file for face recognition",
+                value={"photo": "binary"}
+            )
+        ]
     )
     def post(self, request):
         serializer = PhotoLoginRequestSerializer(data=request.data)

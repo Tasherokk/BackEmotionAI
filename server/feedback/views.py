@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from .models import Feedback
 from .serializers import FeedbackPhotoRequestSerializer
@@ -9,7 +11,30 @@ from .services.emotion_ai import analyze_face
 
 class FeedbackPhotoView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
+    @extend_schema(
+        request=FeedbackPhotoRequestSerializer,
+        responses={
+            201: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "emotion": {"type": "string"},
+                        "confidence": {"type": "number"},
+                        "top3": {"type": "array", "items": {"type": "string"}},
+                        "face_box": {"type": "object"},
+                        "probs": {"type": "object"},
+                    }
+                },
+                description="Feedback created successfully"
+            ),
+            400: OpenApiResponse(description="Invalid data or no face detected"),
+            503: OpenApiResponse(description="AI service unavailable"),
+        },
+        description="Upload a photo to analyze facial emotions and create feedback. The photo should contain a clear face."
+    )
     def post(self, request):
         ser = FeedbackPhotoRequestSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
