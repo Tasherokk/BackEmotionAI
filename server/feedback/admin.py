@@ -71,7 +71,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "company", "starts_at", "ends_at", "status", "participants_count", "feedbacks_count")
+    list_display = ("id", "title", "company", "starts_at", "ends_at", "status")
     list_filter = ("company", "starts_at")
     search_fields = ("title", "company__name")
     date_hierarchy = "starts_at"
@@ -83,10 +83,6 @@ class EventAdmin(admin.ModelAdmin):
         ("📅 Schedule", {"fields": ("starts_at", "ends_at")}),
         ("👥 Participants", {"fields": ("participants",), "description": "Выберите сотрудников компании для участия в событии"}),
     )
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related("company").prefetch_related("participants", "feedbacks")
     
     def status(self, obj):
         """Статус события"""
@@ -100,17 +96,6 @@ class EventAdmin(admin.ModelAdmin):
         else:
             return format_html('<span style="color: #007bff;">⬤ Предстоит</span>')
     status.short_description = "Статус"
-    
-    def participants_count(self, obj):
-        count = obj.participants.count()
-        return format_html('<span style="color: #17a2b8;">👥 {}</span>', count)
-    participants_count.short_description = "Участники"
-    
-    def feedbacks_count(self, obj):
-        count = obj.feedbacks.count() if hasattr(obj, 'feedbacks') else 0
-        color = "#28a745" if count > 0 else "#6c757d"
-        return format_html('<span style="color: {};">💬 {}</span>', color, count)
-    feedbacks_count.short_description = "Отзывы"
 
 
 @admin.register(Feedback)
