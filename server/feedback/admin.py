@@ -86,9 +86,8 @@ class EventAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related("company").annotate(
+        return qs.select_related("company").prefetch_related("participants").annotate(
             _feedbacks_count=Count("feedbacks", distinct=True),
-            _participants_count=Count("participants", distinct=True),
         )
     
     def formfield_for_manytomany(self, db_field, request, **kwargs):
@@ -123,9 +122,8 @@ class EventAdmin(admin.ModelAdmin):
     status.short_description = "Status"
     
     def participants_count(self, obj):
-        return obj._participants_count
+        return obj.participants.count()
     participants_count.short_description = "Participants"
-    participants_count.admin_order_field = "_participants_count"
     
     def feedbacks_count(self, obj):
         return obj._feedbacks_count
