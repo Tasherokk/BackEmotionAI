@@ -55,4 +55,4 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
 class FeedbackPhotoRequestSerializer(serializers.Serializer):
     file = serializers.ImageField()
-    event_id = serializers.IntegerField(required=False)
+    event_id = serializers.IntegerField(required=False, allow_null=True)
