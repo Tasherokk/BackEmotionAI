@@ -51,6 +51,7 @@ services:
       - backend_network
       - emotion_shared
     working_dir: /app/server
+    entrypoint: []
     command: celery -A server worker --loglevel=info
 
   nginx:
