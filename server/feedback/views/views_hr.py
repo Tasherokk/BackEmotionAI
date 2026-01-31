@@ -1,9 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from permissions import IsHR
+from ..permissions import IsHR
 
 
 class CompanyEmployeesView(APIView):
