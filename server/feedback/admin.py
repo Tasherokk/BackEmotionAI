@@ -89,13 +89,19 @@ class EventAdmin(admin.ModelAdmin):
             from django.utils import timezone
             now = timezone.now()
             
+            if not obj.starts_at:
+                return "—"
+            
             if obj.ends_at and now > obj.ends_at:
-                return format_html('<span style="color: #6c757d;">⬤ Завершено</span>')
+                return "⬤ Завершено"
             elif now >= obj.starts_at:
-                return format_html('<span style="color: #28a745;">⬤ Активно</span>')
+                return "⬤ Активно"
             else:
-                return format_html('<span style="color: #007bff;">⬤ Предстоит</span>')
-        except:
+                return "⬤ Предстоит"
+        except Exception as e:
+            import traceback
+            print(f"ERROR in safe_status: {e}")
+            print(traceback.format_exc())
             return "—"
     safe_status.short_description = "Статус"
     
