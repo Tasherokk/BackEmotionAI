@@ -33,10 +33,6 @@ class FeedbackPhotoView(APIView):
                     "properties": {
                         "id": {"type": "integer"},
                         "emotion": {"type": "string"},
-                        "confidence": {"type": "number"},
-                        "top3": {"type": "array", "items": {"type": "string"}},
-                        "face_box": {"type": "object"},
-                        "probs": {"type": "object"},
                     }
                 },
                 description="Feedback created successfully"
@@ -47,7 +43,7 @@ class FeedbackPhotoView(APIView):
         description="Upload a photo to analyze facial emotions and create feedback. The photo should contain a clear face. Event ID is optional."
     )
     def post(self, request):
-        ser = FeedbackPhotoRequestSerializer(data=request.data)
+        ser = FeedbackPhotoRequestSerializer(data=request.data, context={'request': request})
         ser.is_valid(raise_exception=True)
 
         img = ser.validated_data["file"]
@@ -60,10 +56,7 @@ class FeedbackPhotoView(APIView):
         fb = Feedback.objects.create(
             user=request.user,
             emotion=ai.get("emotion", "unknown"),
-            confidence=float(ai.get("confidence", 0.0)),
-            probs=ai.get("probs", {}),
             top3=ai.get("top3", []),
-            face_box=ai.get("face_box"),
             event_id=event_id,
             company=request.user.company,
             department=request.user.department,
@@ -73,8 +66,4 @@ class FeedbackPhotoView(APIView):
         return Response({
             "id": fb.id,
             "emotion": fb.emotion,
-            "confidence": fb.confidence,
-            "top3": fb.top3,
-            "face_box": fb.face_box,
-            "probs": fb.probs,
         }, status=status.HTTP_201_CREATED)

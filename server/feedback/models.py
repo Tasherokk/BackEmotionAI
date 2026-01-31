@@ -24,6 +24,7 @@ class Event(models.Model):
     title = models.CharField(max_length=255)
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField(null=True, blank=True)
+    participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="events", blank=True)
 
     def __str__(self):
         return f"{self.company.name} — {self.title}"
@@ -35,11 +36,7 @@ class Feedback(models.Model):
 
     # результат модели
     emotion = models.CharField(max_length=32)
-    confidence = models.FloatField()
-
-    probs = models.JSONField()
     top3 = models.JSONField(null=True, blank=True)
-    face_box = models.JSONField(null=True, blank=True)
 
     # аналитика
     company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True, related_name="feedbacks")
