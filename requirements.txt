@@ -8,3 +8,4 @@ python-dotenv
 requests>=2.31
 pillow
 drf-spectacular[sidecar]
+whitenoise
