@@ -80,13 +80,13 @@ class EventAdmin(admin.ModelAdmin):
     
     fieldsets = (
         (None, {"fields": ("company", "title")}),
-        ("Schedule", {"fields": ("starts_at", "ends_at")}),
-        ("Participants", {"fields": ("participants",)}),
+        ("📅 Schedule", {"fields": ("starts_at", "ends_at")}),
+        ("👥 Participants", {"fields": ("participants",), "description": "Выберите сотрудников компании для участия в событии"}),
     )
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related("company").prefetch_related("participants")
+        return qs.select_related("company").prefetch_related("participants", "feedbacks")
     
     def status(self, obj):
         """Статус события"""
@@ -94,20 +94,23 @@ class EventAdmin(admin.ModelAdmin):
         now = timezone.now()
         
         if obj.ends_at and now > obj.ends_at:
-            return format_html('<span style="color: gray;">● Finished</span>')
+            return format_html('<span style="color: #6c757d;">⬤ Завершено</span>')
         elif now >= obj.starts_at:
-            return format_html('<span style="color: green;">● Active</span>')
+            return format_html('<span style="color: #28a745;">⬤ Активно</span>')
         else:
-            return format_html('<span style="color: blue;">● Upcoming</span>')
-    status.short_description = "Status"
+            return format_html('<span style="color: #007bff;">⬤ Предстоит</span>')
+    status.short_description = "Статус"
     
     def participants_count(self, obj):
-        return obj.participants.count()
-    participants_count.short_description = "Participants"
+        count = obj.participants.count()
+        return format_html('<span style="color: #17a2b8;">👥 {}</span>', count)
+    participants_count.short_description = "Участники"
     
     def feedbacks_count(self, obj):
-        return obj.feedbacks.count()
-    feedbacks_count.short_description = "Feedbacks"
+        count = obj.feedbacks.count() if hasattr(obj, 'feedbacks') else 0
+        color = "#28a745" if count > 0 else "#6c757d"
+        return format_html('<span style="color: {};">💬 {}</span>', color, count)
+    feedbacks_count.short_description = "Отзывы"
 
 
 @admin.register(Feedback)
