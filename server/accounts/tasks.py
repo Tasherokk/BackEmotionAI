@@ -1,5 +1,5 @@
 from celery import shared_task
-from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from feedback.models import Feedback
 from feedback.services.emotion_ai import analyze_face
 import io
@@ -17,8 +17,15 @@ def process_photo_login_feedback(user_id, photo_data):
     try:
         user = User.objects.get(id=user_id)
         
-        # Преобразуем bytes обратно в file-like объект
-        photo_file = ContentFile(photo_data, name='photo_login.jpg')
+        # Создаем InMemoryUploadedFile из bytes для совместимости с analyze_face
+        photo_file = InMemoryUploadedFile(
+            file=io.BytesIO(photo_data),
+            field_name='photo',
+            name='photo_login.jpg',
+            content_type='image/jpeg',
+            size=len(photo_data),
+            charset=None
+        )
         
         # Анализ эмоций через AI
         ai_result = analyze_face(photo_file)
