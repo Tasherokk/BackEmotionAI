@@ -8,7 +8,7 @@ from .views.views_employee import EmployeeEventsView
 urlpatterns = [
 
     # Employee endpoints
-    path("photo", FeedbackPhotoView.as_view()),
+    path("employee/feedback", FeedbackPhotoView.as_view()),
     path("employee/events/my", EmployeeEventsView.as_view()),
     
     # HR analytics
