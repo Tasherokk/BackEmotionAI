@@ -12,6 +12,13 @@ services:
     networks:
       - backend_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: emotionsai_redis
+    restart: unless-stopped
+    networks:
+      - backend_network
+
   web:
     build: .
     container_name: emotionsai_backend
@@ -22,10 +29,28 @@ services:
       - media_files:/app/server/media
     depends_on:
       - db
+      - redis
     networks:
       - backend_network
       - emotion_shared
-    command: python server/manage.py runserver 0.0.0.0:8001
+    command: gunicorn --workers 4 --bind 0.0.0.0:8001 --chdir server server.wsgi:application
+
+  celery:
+    build: .
+    container_name: emotionsai_celery
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - media_files:/app/server/media
+    depends_on:
+      - db
+      - redis
+      - web
+    networks:
+      - backend_network
+      - emotion_shared
+    command: celery -A server worker --loglevel=info --workdir=/app/server
 
   nginx:
     image: nginx:alpine

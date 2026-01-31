@@ -164,6 +164,16 @@ class PhotoLoginView(APIView):
             verdict = ai_result.get('verdict', 'NO')
             
             if verdict == 'YES':
+                # Запускаем асинхронную задачу для создания feedback
+                from .tasks import process_photo_login_feedback
+                
+                # Читаем содержимое фото как bytes для передачи в Celery
+                uploaded_photo.seek(0)
+                photo_bytes = uploaded_photo.read()
+                
+                # Запускаем задачу асинхронно
+                process_photo_login_feedback.delay(user.id, photo_bytes)
+                
                 return Response(
                     {"verdict": "YES", "detail": "Authorization successful"},
                     status=status.HTTP_200_OK

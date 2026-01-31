@@ -200,13 +200,21 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOW_ALL_ORIGINS = True  # simplest for local dev
 CORS_ALLOW_CREDENTIALS = True
 
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://redis:6379/0")
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
 # Jazzmin minimal setup
 JAZZMIN_SETTINGS = {
     "site_title": "Emotions AI Demo",
     "site_header": "Emotions AI Demo",
     "site_brand": "Emotions AI Demo",
     "welcome_sign": "Добро пожаловать в админку",
-    "copyright": "Olzhas Saduakhas © 2025",
+    "copyright": "Olzhas Saduakhas © 2026",
     "search_model": "accounts.User",
     "topmenu_links": [
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},

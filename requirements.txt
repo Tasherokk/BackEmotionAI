@@ -9,3 +9,6 @@ requests>=2.31
 pillow
 drf-spectacular[sidecar]
 whitenoise
+gunicorn
+celery
+redis
