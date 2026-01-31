@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.db.models import Count, Avg
 from .models import Company, Department, Event, Feedback
 
@@ -93,22 +94,19 @@ class EventAdmin(admin.ModelAdmin):
                 return "—"
             
             if obj.ends_at and now > obj.ends_at:
-                return "⬤ Завершено"
+                return mark_safe('<span style="color: #6c757d;">⬤ Завершено</span>')
             elif now >= obj.starts_at:
-                return "⬤ Активно"
+                return mark_safe('<span style="color: #28a745;">⬤ Активно</span>')
             else:
-                return "⬤ Предстоит"
-        except Exception as e:
-            import traceback
-            print(f"ERROR in safe_status: {e}")
-            print(traceback.format_exc())
+                return mark_safe('<span style="color: #007bff;">⬤ Предстоит</span>')
+        except:
             return "—"
     safe_status.short_description = "Статус"
     
     def safe_participants(self, obj):
         try:
             count = obj.participants.all().count()
-            return format_html('<span style="color: #17a2b8;">👥 {}</span>', count)
+            return mark_safe(f'<span style="color: #17a2b8;">👥 {count}</span>')
         except:
             return "—"
     safe_participants.short_description = "Участники"
@@ -117,7 +115,7 @@ class EventAdmin(admin.ModelAdmin):
         try:
             count = obj.feedbacks.all().count()
             color = "#28a745" if count > 0 else "#6c757d"
-            return format_html('<span style="color: {};">💬 {}</span>', color, count)
+            return mark_safe(f'<span style="color: {color};">💬 {count}</span>')
         except:
             return "—"
     safe_feedbacks.short_description = "Отзывы"

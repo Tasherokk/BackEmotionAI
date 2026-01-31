@@ -23,7 +23,7 @@ class Event(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="events")
     title = models.CharField(max_length=255)
     starts_at = models.DateTimeField()
-    ends_at = models.DateTimeField(null=True, blank=True)
+    ends_at = models.DateTimeField()
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="events", blank=True)
 
     def __str__(self):
