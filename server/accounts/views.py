@@ -164,16 +164,20 @@ class PhotoLoginView(APIView):
             verdict = ai_result.get('verdict', 'NO')
             
             if verdict == 'YES':
-                # TODO: Временно отключено для отладки
                 # Запускаем асинхронную задачу для создания feedback
-                # try:
-                #     from .tasks import process_photo_login_feedback
-                #     uploaded_photo.seek(0)
-                #     photo_bytes = uploaded_photo.read()
-                #     process_photo_login_feedback.delay(user.id, photo_bytes)
-                # except Exception as e:
-                #     import logging
-                #     logging.error(f"Failed to queue feedback task: {e}")
+                try:
+                    from .tasks import process_photo_login_feedback
+                    
+                    # Читаем содержимое фото как bytes для передачи в Celery
+                    uploaded_photo.seek(0)
+                    photo_bytes = uploaded_photo.read()
+                    
+                    # Запускаем задачу асинхронно
+                    process_photo_login_feedback.delay(user.id, photo_bytes)
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to queue feedback task: {e}")
                 
                 return Response(
                     {"verdict": "YES", "detail": "Authorization successful"},
