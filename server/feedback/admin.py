@@ -71,7 +71,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "company", "starts_at", "ends_at")
+    list_display = ("id", "title", "company", "starts_at", "ends_at", "status", "participants_count", "feedbacks_count")
     list_filter = ("company", "starts_at")
     search_fields = ("title", "company__name")
     date_hierarchy = "starts_at"
@@ -83,6 +83,31 @@ class EventAdmin(admin.ModelAdmin):
         ("Schedule", {"fields": ("starts_at", "ends_at")}),
         ("Participants", {"fields": ("participants",)}),
     )
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related("company").prefetch_related("participants")
+    
+    def status(self, obj):
+        """Статус события"""
+        from django.utils import timezone
+        now = timezone.now()
+        
+        if obj.ends_at and now > obj.ends_at:
+            return format_html('<span style="color: gray;">● Finished</span>')
+        elif now >= obj.starts_at:
+            return format_html('<span style="color: green;">● Active</span>')
+        else:
+            return format_html('<span style="color: blue;">● Upcoming</span>')
+    status.short_description = "Status"
+    
+    def participants_count(self, obj):
+        return obj.participants.count()
+    participants_count.short_description = "Participants"
+    
+    def feedbacks_count(self, obj):
+        return obj.feedbacks.count()
+    feedbacks_count.short_description = "Feedbacks"
 
 
 @admin.register(Feedback)
