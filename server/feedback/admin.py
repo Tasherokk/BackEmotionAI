@@ -71,8 +71,8 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "company", "starts_at", "ends_at", "status", "participants_count", "feedbacks_count")
-    list_filter = ("company", "starts_at", "ends_at")
+    list_display = ("id", "title", "company", "starts_at", "ends_at")
+    list_filter = ("company", "starts_at")
     search_fields = ("title", "company__name")
     date_hierarchy = "starts_at"
     list_per_page = 25
@@ -83,65 +83,6 @@ class EventAdmin(admin.ModelAdmin):
         ("Schedule", {"fields": ("starts_at", "ends_at")}),
         ("Participants", {"fields": ("participants",)}),
     )
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        try:
-            return qs.select_related("company").prefetch_related("participants").annotate(
-                _feedbacks_count=Count("feedbacks", distinct=True),
-            )
-        except Exception as e:
-            import traceback
-            print(f"ERROR in EventAdmin.get_queryset: {e}")
-            print(traceback.format_exc())
-            return qs
-    
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        """Фильтруем участников только по компании события"""
-        if db_field.name == "participants":
-            # Получаем ID события из URL
-            obj_id = request.resolver_match.kwargs.get('object_id')
-            if obj_id:
-                try:
-                    event = Event.objects.get(pk=obj_id)
-                    # Показываем только сотрудников этой компании
-                    from accounts.models import User
-                    kwargs["queryset"] = User.objects.filter(
-                        company=event.company, 
-                        role=User.Role.EMPLOYEE
-                    )
-                except Event.DoesNotExist:
-                    pass
-        return super().formfield_for_manytomany(db_field, request, **kwargs)
-    
-    def status(self, obj):
-        """Статус события"""
-        from django.utils import timezone
-        now = timezone.now()
-        
-        if obj.ends_at and now > obj.ends_at:
-            return format_html('<span style="color: gray;">● Finished</span>')
-        elif now >= obj.starts_at:
-            return format_html('<span style="color: green;">● Active</span>')
-        else:
-            return format_html('<span style="color: blue;">● Upcoming</span>')
-    status.short_description = "Status"
-    
-    def participants_count(self, obj):
-        try:
-            return obj.participants.count()
-        except Exception as e:
-            print(f"ERROR in participants_count: {e}")
-            return 0
-    participants_count.short_description = "Participants"
-    
-    def feedbacks_count(self, obj):
-        try:
-            return obj._feedbacks_count
-        except AttributeError:
-            print(f"ERROR: obj._feedbacks_count not found for {obj}")
-            return obj.feedbacks.count()
-    feedbacks_count.short_description = "Feedbacks"
 
 
 @admin.register(Feedback)
