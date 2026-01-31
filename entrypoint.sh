@@ -11,7 +11,7 @@ echo "Running database migrations..."
 python server/manage.py migrate --noinput
 
 echo "Collecting static files..."
-python server/manage.py collectstatic --noinput
+python server/manage.py collectstatic --noinput --clear
 
 echo "Starting Django server..."
 exec "$@"
