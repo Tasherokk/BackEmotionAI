@@ -70,3 +70,4 @@ class MeResponseSerializer(serializers.ModelSerializer):
 def make_token_pair(user: User) -> dict:
     refresh = RefreshToken.for_user(user)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
+

@@ -6,9 +6,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 
-from .models import Feedback
-from .serializers import FeedbackPhotoRequestSerializer
-from .services.emotion_ai import analyze_face
+from feedback.models import Feedback
+from ..serializers.serializers_feedback import FeedbackPhotoRequestSerializer
+from feedback.services.emotion_ai import analyze_face
 
 class FeedbackPhotoView(APIView):
     permission_classes = [IsAuthenticated]
