@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 from .models import Feedback
 from .serializers import FeedbackPhotoRequestSerializer
@@ -15,6 +16,16 @@ class FeedbackPhotoView(APIView):
 
     @extend_schema(
         request=FeedbackPhotoRequestSerializer,
+        parameters=[
+            OpenApiParameter(
+                name='event_id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Optional event ID to associate with feedback',
+                allow_blank=True
+            ),
+        ],
         responses={
             201: OpenApiResponse(
                 response={
@@ -33,7 +44,7 @@ class FeedbackPhotoView(APIView):
             400: OpenApiResponse(description="Invalid data or no face detected"),
             503: OpenApiResponse(description="AI service unavailable"),
         },
-        description="Upload a photo to analyze facial emotions and create feedback. The photo should contain a clear face."
+        description="Upload a photo to analyze facial emotions and create feedback. The photo should contain a clear face. Event ID is optional."
     )
     def post(self, request):
         ser = FeedbackPhotoRequestSerializer(data=request.data)
