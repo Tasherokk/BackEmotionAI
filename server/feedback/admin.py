@@ -86,9 +86,15 @@ class EventAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related("company").prefetch_related("participants").annotate(
-            _feedbacks_count=Count("feedbacks", distinct=True),
-        )
+        try:
+            return qs.select_related("company").prefetch_related("participants").annotate(
+                _feedbacks_count=Count("feedbacks", distinct=True),
+            )
+        except Exception as e:
+            import traceback
+            print(f"ERROR in EventAdmin.get_queryset: {e}")
+            print(traceback.format_exc())
+            return qs
     
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         """Фильтруем участников только по компании события"""
@@ -122,13 +128,20 @@ class EventAdmin(admin.ModelAdmin):
     status.short_description = "Status"
     
     def participants_count(self, obj):
-        return obj.participants.count()
+        try:
+            return obj.participants.count()
+        except Exception as e:
+            print(f"ERROR in participants_count: {e}")
+            return 0
     participants_count.short_description = "Participants"
     
     def feedbacks_count(self, obj):
-        return obj._feedbacks_count
+        try:
+            return obj._feedbacks_count
+        except AttributeError:
+            print(f"ERROR: obj._feedbacks_count not found for {obj}")
+            return obj.feedbacks.count()
     feedbacks_count.short_description = "Feedbacks"
-    feedbacks_count.admin_order_field = "_feedbacks_count"
 
 
 @admin.register(Feedback)
