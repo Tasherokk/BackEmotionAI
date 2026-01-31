@@ -49,6 +49,9 @@ class FeedbackPhotoView(APIView):
         img = ser.validated_data["file"]
         event_id = ser.validated_data.get("event_id")
 
+        if event_id == 0:
+            event_id = None
+
         # 1) дергаем AI
         ai = analyze_face(img)
 
