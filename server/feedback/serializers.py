@@ -56,3 +56,10 @@ class FeedbackSerializer(serializers.ModelSerializer):
 class FeedbackPhotoRequestSerializer(serializers.Serializer):
     file = serializers.ImageField()
     event_id = serializers.IntegerField(required=False, allow_null=True)
+    
+    def validate_event_id(self, value):
+        """Проверка существования события, если передан event_id"""
+        if value is not None:
+            if not Event.objects.filter(id=value).exists():
+                raise serializers.ValidationError(f"Event with id {value} does not exist")
+        return value
