@@ -42,8 +42,6 @@ docker-compose.yml
 
 # Documentation
 *.md
-SWAGGER_GUIDE.md
-QUICK_START.md
 
 # Tests
 *.pyc

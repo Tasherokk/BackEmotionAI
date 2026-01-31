@@ -20,8 +20,6 @@ services:
       - .env
     depends_on:
       - db
-    volumes:
-      - ./server:/app/server
     networks:
       - backend_network
       - emotion_shared
