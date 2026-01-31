@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_spectacular",
+    "drf_spectacular_sidecar",
 
     # custom apps
     "accounts",
