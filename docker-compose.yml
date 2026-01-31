@@ -50,7 +50,8 @@ services:
     networks:
       - backend_network
       - emotion_shared
-    command: celery -A server.celery worker --loglevel=info --workdir=/app/server
+    working_dir: /app/server
+    command: celery -A server worker --loglevel=info
 
   nginx:
     image: nginx:alpine
