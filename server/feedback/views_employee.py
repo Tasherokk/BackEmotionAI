@@ -58,7 +58,6 @@ class MyStatsView(APIView):
         
         # Основные метрики
         total = qs.count()
-        avg_conf = qs.aggregate(v=Avg("confidence"))["v"] or 0.0
         
         # Распределение эмоций
         emo_counts = list(
@@ -76,7 +75,6 @@ class MyStatsView(APIView):
         
         return Response({
             "total": total,
-            "avg_confidence": float(avg_conf),
             "top_emotion": top_emotion,
             "emotions": emo_counts,
             "filters": {"from": from_s, "to": to_s},

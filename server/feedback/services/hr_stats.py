@@ -29,7 +29,6 @@ def overview(from_s=None, to_s=None, event_id=None, department=None) -> dict:
     qs = _base_qs(from_s, to_s, event_id, department)
 
     total = qs.count()
-    avg_conf = qs.aggregate(v=Avg("confidence"))["v"] or 0.0
 
     emo_counts = list(
         qs.values("emotion")
@@ -46,7 +45,6 @@ def overview(from_s=None, to_s=None, event_id=None, department=None) -> dict:
 
     return {
         "total": total,
-        "avg_confidence": float(avg_conf),
         "top_emotion": top_emotion,
         "emotions": emo_counts,  # [{emotion,count,percent}]
         "filters": {"from": from_s, "to": to_s, "event_id": event_id, "department": department},
@@ -83,7 +81,7 @@ def by_user(from_s=None, to_s=None, limit=20, event_id=None, department=None) ->
 
     rows = (
         qs.values("user_id", "user__username", "user__name")
-          .annotate(total=Count("id"), avg_conf=Avg("confidence"))
+          .annotate(total=Count("id"))
           .order_by("-total")[: int(limit)]
     )
 
@@ -103,7 +101,6 @@ def by_user(from_s=None, to_s=None, limit=20, event_id=None, department=None) ->
             "name": who,
             "username": r["user__username"],
             "total": r["total"],
-            "avg_confidence": float(r["avg_conf"] or 0.0),
             "top_emotion": top["emotion"] if top else None,
         })
 
