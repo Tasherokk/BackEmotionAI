@@ -71,7 +71,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "company", "starts_at", "ends_at", "status")
+    list_display = ("id", "title", "company", "starts_at", "ends_at", "safe_status", "safe_participants", "safe_feedbacks")
     list_filter = ("company", "starts_at")
     search_fields = ("title", "company__name")
     date_hierarchy = "starts_at"
@@ -80,22 +80,41 @@ class EventAdmin(admin.ModelAdmin):
     
     fieldsets = (
         (None, {"fields": ("company", "title")}),
-        ("📅 Schedule", {"fields": ("starts_at", "ends_at")}),
-        ("👥 Participants", {"fields": ("participants",), "description": "Выберите сотрудников компании для участия в событии"}),
+        ("Schedule", {"fields": ("starts_at", "ends_at")}),
+        ("Participants", {"fields": ("participants",)}),
     )
     
-    def status(self, obj):
-        """Статус события"""
-        from django.utils import timezone
-        now = timezone.now()
-        
-        if obj.ends_at and now > obj.ends_at:
-            return format_html('<span style="color: #6c757d;">⬤ Завершено</span>')
-        elif now >= obj.starts_at:
-            return format_html('<span style="color: #28a745;">⬤ Активно</span>')
-        else:
-            return format_html('<span style="color: #007bff;">⬤ Предстоит</span>')
-    status.short_description = "Статус"
+    def safe_status(self, obj):
+        try:
+            from django.utils import timezone
+            now = timezone.now()
+            
+            if obj.ends_at and now > obj.ends_at:
+                return format_html('<span style="color: #6c757d;">⬤ Завершено</span>')
+            elif now >= obj.starts_at:
+                return format_html('<span style="color: #28a745;">⬤ Активно</span>')
+            else:
+                return format_html('<span style="color: #007bff;">⬤ Предстоит</span>')
+        except:
+            return "—"
+    safe_status.short_description = "Статус"
+    
+    def safe_participants(self, obj):
+        try:
+            count = obj.participants.all().count()
+            return format_html('<span style="color: #17a2b8;">👥 {}</span>', count)
+        except:
+            return "—"
+    safe_participants.short_description = "Участники"
+    
+    def safe_feedbacks(self, obj):
+        try:
+            count = obj.feedbacks.all().count()
+            color = "#28a745" if count > 0 else "#6c757d"
+            return format_html('<span style="color: {};">💬 {}</span>', color, count)
+        except:
+            return "—"
+    safe_feedbacks.short_description = "Отзывы"
 
 
 @admin.register(Feedback)
