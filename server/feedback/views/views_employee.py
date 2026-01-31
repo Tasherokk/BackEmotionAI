@@ -14,7 +14,7 @@ class EmployeeEventsView(APIView):
     @extend_schema(
         responses={
             200: OpenApiResponse(
-                description="List of events where user is a participant",
+                description="List of active events where user is a participant",
                 response={
                     "type": "array",
                     "items": {
@@ -27,17 +27,19 @@ class EmployeeEventsView(APIView):
                             "company": {"type": "integer"},
                             "company_name": {"type": "string"},
                             "participants_count": {"type": "integer"},
+                            "has_feedback": {"type": "boolean", "description": "Whether user has already submitted feedback for this event"},
                         }
                     }
                 }
             ),
             403: OpenApiResponse(description="Only employees can access this endpoint"),
         },
-        description="Get list of events where the authenticated employee is a participant. Only shows events from user's company.",
-        summary="Get my events (Employee only)"
+        description="Get list of ACTIVE events (between starts_at and ends_at) where the authenticated employee is a participant. Only shows events from user's company. The has_feedback field indicates if the user has already submitted feedback.",
+        summary="Get my active events (Employee only)"
     )
     def get(self, request):
         from accounts.models import User
+        from django.utils import timezone
         
         # Проверяем что пользователь - сотрудник
         if request.user.role != User.Role.EMPLOYEE:
@@ -46,10 +48,15 @@ class EmployeeEventsView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        # Получаем события где пользователь - participant
+        now = timezone.now()
+        
+        # Получаем только активные события где пользователь - participant
         events = Event.objects.filter(
             company=request.user.company,
-            participants=request.user
+            participants=request.user,
+            starts_at__lte=now,
+            ends_at__gte=now
         ).select_related('company').prefetch_related('participants').order_by('-starts_at')
         
-        return Response(EventSerializer(events, many=True).data)
+        serializer = EventSerializer(events, many=True, context={'request': request})
+        return Response(serializer.data)

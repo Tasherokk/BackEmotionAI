@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Event
+from ..models import Event, Feedback
 
 class FeedbackPhotoRequestSerializer(serializers.Serializer):
     file = serializers.ImageField()
@@ -28,6 +28,12 @@ class FeedbackPhotoRequestSerializer(serializers.Serializer):
         if not event.participants.filter(id=request.user.id).exists():
             raise serializers.ValidationError({
                 "event_id": "You are not a participant of this event"
+            })
+        
+        # Проверяем что пользователь еще не оставлял feedback на это событие
+        if Feedback.objects.filter(event=event, user=request.user).exists():
+            raise serializers.ValidationError({
+                "event_id": "You have already submitted feedback for this event"
             })
         
         return attrs
