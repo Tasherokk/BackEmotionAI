@@ -255,7 +255,7 @@ class HREventsView(APIView):
         serializer = EventListSerializer(events, many=True)
         return Response(serializer.data)
     
-    
+
 
 class HREventManageView(APIView):
     """Создание и список ивентов компании"""
@@ -290,23 +290,21 @@ class HREventManageView(APIView):
         return Response(serializer.data)
 
     @extend_schema(
-        request=OpenApiResponse(
-            description="Event creation data",
-            response={
-                "type": "object",
-                "properties": {
-                    "title": {"type": "string"},
-                    "starts_at": {"type": "string", "format": "date-time"},
-                    "ends_at": {"type": "string", "format": "date-time"},
-                    "participants": {
-                        "type": "array",
-                        "items": {"type": "integer"},
-                        "description": "Array of employee IDs (optional)"
-                    }
-                },
-                "required": ["title", "starts_at", "ends_at"]
-            }
-        ),
+        request={"application/json": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "example": "Team Meeting"},
+                "starts_at": {"type": "string", "format": "date-time", "example": "2026-02-15T10:00:00Z"},
+                "ends_at": {"type": "string", "format": "date-time", "example": "2026-02-15T12:00:00Z"},
+                "participants": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "description": "Array of employee IDs (optional)",
+                    "example": [1, 2, 3]
+                }
+            },
+            "required": ["title", "starts_at", "ends_at"]
+        }},
         responses={
             201: OpenApiResponse(description="Event created successfully"),
             400: OpenApiResponse(description="Validation error"),
@@ -345,23 +343,21 @@ class HREventDetailView(APIView):
         return obj
 
     @extend_schema(
-        request=OpenApiResponse(
-            description="Event update data",
-            response={
-                "type": "object",
-                "properties": {
-                    "title": {"type": "string"},
-                    "starts_at": {"type": "string", "format": "date-time"},
-                    "ends_at": {"type": "string", "format": "date-time"},
-                    "participants": {
-                        "type": "array",
-                        "items": {"type": "integer"},
-                        "description": "Array of employee IDs"
-                    }
-                },
-                "required": ["title", "starts_at", "ends_at"]
-            }
-        ),
+        request={"application/json": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "example": "Updated Team Meeting"},
+                "starts_at": {"type": "string", "format": "date-time", "example": "2026-02-15T10:00:00Z"},
+                "ends_at": {"type": "string", "format": "date-time", "example": "2026-02-15T12:00:00Z"},
+                "participants": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "description": "Array of employee IDs",
+                    "example": [1, 2, 3, 4]
+                }
+            },
+            "required": ["title", "starts_at", "ends_at"]
+        }},
         responses={
             200: OpenApiResponse(description="Event updated successfully"),
             400: OpenApiResponse(description="Validation error"),
