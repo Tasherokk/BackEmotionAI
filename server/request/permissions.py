@@ -14,3 +14,9 @@ class IsEmployee(BasePermission):
             and request.user.is_authenticated 
             and getattr(request.user, "role", None) == "EMPLOYEE"
         )
+    
+
+class IsRequestParticipant(BasePermission):
+    """Проверяет что пользователь - участник заявки (employee или hr)"""
+    def has_object_permission(self, request, view, obj):
+        return obj.employee == request.user or obj.hr == request.user

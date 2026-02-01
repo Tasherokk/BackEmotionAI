@@ -42,7 +42,8 @@ INSTALLED_APPS = [
 
     # custom apps
     "accounts",
-    "feedback"
+    "feedback",
+    "request",
 ]
 
 MIDDLEWARE = [
