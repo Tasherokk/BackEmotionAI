@@ -215,48 +215,6 @@ class HRFeedbackAnalyticsView(APIView):
         return Response(serializer.data)
 
 
-class HREventsView(APIView):
-    """Список всех ивентов компании HR"""
-    permission_classes = [IsAuthenticated, IsHR]
-
-    @extend_schema(
-        responses={
-            200: OpenApiResponse(
-                description="List of all company events",
-                response={
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "title": {"type": "string"},
-                            "starts_at": {"type": "string", "format": "date-time"},
-                            "ends_at": {"type": "string", "format": "date-time"},
-                            "company": {"type": "integer"},
-                            "company_name": {"type": "string"},
-                            "participants_count": {"type": "integer"},
-                        }
-                    }
-                }
-            ),
-            403: OpenApiResponse(description="Only HR can access this endpoint"),
-        },
-        description="Get list of all events in HR's company",
-        summary="Get company events (HR only)"
-    )
-    def get(self, request):
-        from ..models import Event
-        
-        events = Event.objects.filter(
-            company=request.user.company
-        ).select_related("company").prefetch_related("participants").order_by("-starts_at")
-        
-        from ..serializers.serializers_hr import EventListSerializer
-        serializer = EventListSerializer(events, many=True)
-        return Response(serializer.data)
-    
-
-
 class HREventManageView(APIView):
     """Создание и список ивентов компании"""
     permission_classes = [IsAuthenticated, IsHR]
