@@ -221,15 +221,21 @@ class HREventManageView(APIView):
 
     @extend_schema(
         responses={
-            200: OpenApiResponse(
-                description="List of all company events",
-                response={
-                    "type": "array",
-                    "items": {
-                        "type": "object"
+            200: {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "title": {"type": "string"},
+                        "starts_at": {"type": "string", "format": "date-time"},
+                        "ends_at": {"type": "string", "format": "date-time"},
+                        "company": {"type": "integer"},
+                        "company_name": {"type": "string"},
+                        "participants_count": {"type": "integer"}
                     }
                 }
-            ),
+            },
             403: OpenApiResponse(description="Only HR can access this endpoint"),
         },
         description="Get list of all events in HR's company",
