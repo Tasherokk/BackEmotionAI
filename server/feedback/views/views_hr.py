@@ -5,6 +5,7 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from ..permissions import IsHR
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from datetime import datetime
 
 
@@ -253,3 +254,154 @@ class HREventsView(APIView):
         from ..serializers.serializers_hr import EventListSerializer
         serializer = EventListSerializer(events, many=True)
         return Response(serializer.data)
+    
+    
+
+class HREventManageView(APIView):
+    """Создание и список ивентов компании"""
+    permission_classes = [IsAuthenticated, IsHR]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(
+                description="List of all company events",
+                response={
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            ),
+            403: OpenApiResponse(description="Only HR can access this endpoint"),
+        },
+        description="Get list of all events in HR's company",
+        summary="Get company events (HR only)"
+    )
+    def get(self, request):
+        """Список всех ивентов компании"""
+        from ..models import Event
+        
+        events = Event.objects.filter(
+            company=request.user.company
+        ).select_related("company").prefetch_related("participants").order_by("-starts_at")
+        
+        from ..serializers.serializers_hr import EventListSerializer
+        serializer = EventListSerializer(events, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        request=OpenApiResponse(
+            description="Event creation data",
+            response={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "starts_at": {"type": "string", "format": "date-time"},
+                    "ends_at": {"type": "string", "format": "date-time"},
+                    "participants": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "Array of employee IDs (optional)"
+                    }
+                },
+                "required": ["title", "starts_at", "ends_at"]
+            }
+        ),
+        responses={
+            201: OpenApiResponse(description="Event created successfully"),
+            400: OpenApiResponse(description="Validation error"),
+            403: OpenApiResponse(description="Only HR can access this endpoint"),
+        },
+        description="Create a new event in HR's company. Start date must be in the future. End date must be after start date. Participants must be employees from the same company.",
+        summary="Create event (HR only)"
+    )
+    def post(self, request):
+        """Создание нового ивента"""
+        from ..serializers.serializers_hr import EventCreateUpdateSerializer
+        
+        serializer = EventCreateUpdateSerializer(
+            data=request.data,
+            context={"request": request}
+        )
+        if serializer.is_valid():
+            event = serializer.save()
+            
+            # Возвращаем созданный ивент
+            from ..serializers.serializers_hr import EventListSerializer
+            response_serializer = EventListSerializer(event)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class HREventDetailView(APIView):
+    """Редактирование и удаление ивента"""
+    permission_classes = [IsAuthenticated, IsHR]
+
+    def get_object(self, pk, user):
+        """Получаем ивент только своей компании"""
+        from ..models import Event
+        obj = get_object_or_404(Event, pk=pk, company=user.company)
+        return obj
+
+    @extend_schema(
+        request=OpenApiResponse(
+            description="Event update data",
+            response={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "starts_at": {"type": "string", "format": "date-time"},
+                    "ends_at": {"type": "string", "format": "date-time"},
+                    "participants": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "Array of employee IDs"
+                    }
+                },
+                "required": ["title", "starts_at", "ends_at"]
+            }
+        ),
+        responses={
+            200: OpenApiResponse(description="Event updated successfully"),
+            400: OpenApiResponse(description="Validation error"),
+            403: OpenApiResponse(description="Only HR can access this endpoint"),
+            404: OpenApiResponse(description="Event not found"),
+        },
+        description="Update an event. Can only update events from HR's company. All validations apply (dates, participants).",
+        summary="Update event (HR only)"
+    )
+    def put(self, request, pk):
+        """Полное обновление ивента"""
+        event = self.get_object(pk, request.user)
+        
+        from ..serializers.serializers_hr import EventCreateUpdateSerializer
+        serializer = EventCreateUpdateSerializer(
+            event,
+            data=request.data,
+            context={"request": request}
+        )
+        if serializer.is_valid():
+            updated_event = serializer.save()
+            
+            # Возвращаем обновленный ивент
+            from ..serializers.serializers_hr import EventListSerializer
+            response_serializer = EventListSerializer(updated_event)
+            return Response(response_serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        responses={
+            204: OpenApiResponse(description="Event deleted successfully"),
+            403: OpenApiResponse(description="Only HR can access this endpoint"),
+            404: OpenApiResponse(description="Event not found"),
+        },
+        description="Delete an event from HR's company. Feedbacks linked to this event will have event field set to null.",
+        summary="Delete event (HR only)"
+    )
+    def delete(self, request, pk):
+        """Удаление ивента"""
+        event = self.get_object(pk, request.user)
+        event.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
