@@ -113,6 +113,17 @@ class RequestAdmin(admin.ModelAdmin):
         }),
     )
     
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """Фильтрация пользователей по ролям"""
+        from accounts.models import User
+        
+        if db_field.name == "employee":
+            kwargs["queryset"] = User.objects.filter(role=User.Role.EMPLOYEE, is_active=True)
+        elif db_field.name == "hr":
+            kwargs["queryset"] = User.objects.filter(role=User.Role.HR, is_active=True)
+        
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
     def colored_status(self, obj):
         """Статус с цветным фоном"""
         colors = {
