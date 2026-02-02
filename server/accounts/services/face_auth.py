@@ -37,8 +37,8 @@ def verify_face_authorization(stored_photo_field, uploaded_photo_file) -> dict:
             'photo2': (uploaded_photo_file.name, uploaded_content, uploaded_photo_file.content_type or 'image/jpeg')
         }
         
-        # Reduced timeout to avoid Gunicorn worker timeout
-        r = requests.post(f"{AI_BASE_URL}/authorization", files=files, timeout=25)
+        # Timeout 45 секунд - достаточно для AI обработки, но меньше Gunicorn timeout (300s)
+        r = requests.post(f"{AI_BASE_URL}/authorization", files=files, timeout=45)
         r.raise_for_status()
         return r.json()
     
