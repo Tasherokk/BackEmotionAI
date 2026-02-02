@@ -33,7 +33,7 @@ services:
     networks:
       - backend_network
       - emotion_shared
-    command: ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:8001", "--chdir", "server", "server.wsgi:application"]
+    command: ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:8001", "--timeout", "300", "--graceful-timeout", "30", "--chdir", "server", "server.wsgi:application"]
 
   celery:
     build: .

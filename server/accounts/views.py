@@ -4,6 +4,7 @@ from rest_framework import status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .services.face_auth import verify_face_authorization
 from drf_spectacular.utils import extend_schema, OpenApiExample
+import requests
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -189,9 +190,28 @@ class PhotoLoginView(APIView):
                     {"verdict": "NO", "detail": "Authorization failed"},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
-                
+        
+        except requests.Timeout:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"AI service timeout for user {user.username}")
+            return Response(
+                {"detail": "AI service timeout. Please try again later."},
+                status=status.HTTP_504_GATEWAY_TIMEOUT
+            )
+        except requests.RequestException as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"AI service error for user {user.username}: {str(e)}")
+            return Response(
+                {"detail": "AI service is temporarily unavailable. Please try again later."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
         except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Unexpected authorization error for user {user.username}: {str(e)}")
             return Response(
                 {"detail": f"Authorization error: {str(e)}"},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
