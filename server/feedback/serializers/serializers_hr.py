@@ -62,9 +62,8 @@ class EventListSerializer(serializers.ModelSerializer):
 
 class EventCreateUpdateSerializer(serializers.ModelSerializer):
     """Создание и обновление ивента"""
-    participants = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.none(),
-        many=True,
+    participants = serializers.ListField(
+        child=serializers.IntegerField(),
         required=False,
         allow_empty=True
     )
@@ -78,51 +77,42 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             'ends_at': {'required': False},
         }
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get("request")
-        if request and request.user:
-            # Только Employee своей компании
-            self.fields["participants"].queryset = User.objects.filter(
-                company=request.user.company,
-                role=User.Role.EMPLOYEE,
-                is_active=True
-            )
-    
-    def to_internal_value(self, data):
-        """Переопределяем для лучшей обработки ошибок participants"""
-        request = self.context.get("request")
+    def validate_participants(self, participant_ids):
+        """Проверяем что все участники существуют и являются Employee компании HR"""
+        if not participant_ids:
+            return []
         
-        # Проверяем participants отдельно для более понятных ошибок
-        if 'participants' in data and request and request.user:
-            participant_ids = data.get('participants', [])
-            if participant_ids:
-                # Проверяем существование пользователей
-                existing_users = User.objects.filter(id__in=participant_ids)
-                existing_ids = set(existing_users.values_list('id', flat=True))
-                
-                for pid in participant_ids:
-                    if pid not in existing_ids:
-                        raise serializers.ValidationError({
-                            'participants': f'User with ID {pid} does not exist'
-                        })
-                
-                # Проверяем что все из нашей компании и Employee
-                for user in existing_users:
-                    if user.company_id != request.user.company_id:
-                        raise serializers.ValidationError({
-                            'participants': f'User "{user.username}" (ID: {user.id}) is not from your company'
-                        })
-                    if user.role != User.Role.EMPLOYEE:
-                        raise serializers.ValidationError({
-                            'participants': f'User "{user.username}" (ID: {user.id}) is not an employee'
-                        })
-                    if not user.is_active:
-                        raise serializers.ValidationError({
-                            'participants': f'User "{user.username}" (ID: {user.id}) is not active'
-                        })
+        request = self.context.get("request")
+        if not request or not request.user:
+            raise serializers.ValidationError("User not authenticated")
         
-        return super().to_internal_value(data)
+        # Проверяем существование пользователей
+        existing_users = User.objects.filter(id__in=participant_ids)
+        existing_ids = set(existing_users.values_list('id', flat=True))
+        
+        for pid in participant_ids:
+            if pid not in existing_ids:
+                raise serializers.ValidationError(
+                    f'User with ID {pid} does not exist'
+                )
+        
+        # Проверяем что все из нашей компании и Employee
+        for user in existing_users:
+            if user.company_id != request.user.company_id:
+                raise serializers.ValidationError(
+                    f'User "{user.username}" (ID: {user.id}) is not from your company'
+                )
+            if user.role != User.Role.EMPLOYEE:
+                raise serializers.ValidationError(
+                    f'User "{user.username}" (ID: {user.id}) is not an employee'
+                )
+            if not user.is_active:
+                raise serializers.ValidationError(
+                    f'User "{user.username}" (ID: {user.id}) is not active'
+                )
+        
+        # Возвращаем объекты User для дальнейшего использования
+        return list(existing_users)
     
     def validate(self, attrs):
         """Валидация дат"""
