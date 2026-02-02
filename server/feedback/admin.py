@@ -12,6 +12,15 @@ import pytz
 
 logger = logging.getLogger(__name__)
 
+def get_local_time(dt):
+    if not dt:
+        return "—"
+    try:
+        tz = pytz.timezone('Asia/Almaty')
+        return dt.astimezone(tz).strftime('%Y-%m-%d %H:%M:%S')
+    except Exception:
+        return str(dt)
+
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "users_count", "departments_count", "events_count", "feedbacks_count")
@@ -159,101 +168,166 @@ class EventAdmin(admin.ModelAdmin):
             return "—"
     safe_feedbacks.short_description = "Отзывы"
 
-
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ("id", "safe_user", "emotion_badge", "safe_company", "safe_department", "safe_event", "local_created_at")
-    list_filter = ("emotion", "company", "department", "event", "created_at")
-    search_fields = ("user__username", "user__first_name", "user__last_name", "event__title", "company__name", "department__name")
-    date_hierarchy = "created_at"
-    list_per_page = 50
+    # 1. Порядок столбцов
+    list_display = ("id", "safe_user", "emotion_badge", "safe_company", "safe_event", "local_created_at")
+    
+    # 2. Фильтры (убрали department, если он вызывает тормоза)
+    list_filter = ("emotion", "company", "created_at")
+    
+    # 3. Поиск (самые стабильные поля)
+    search_fields = ("user__username", "emotion", "company__name")
+    
     readonly_fields = ("created_at", "top3_display")
     
-    fieldsets = (
-        ("User Info", {"fields": ("user", "created_at")}),
-        ("Emotion Analysis", {
-            "fields": ("emotion", "top3_display"),
-        }),
-        ("Organization", {
-            "fields": ("company", "department", "event"),
-        }),
-    )
-    
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("user", "company", "department", "event")
-    
-    # --- Безопасные методы отображения ---
-    
+        # ВНИМАНИЕ: Если integrity базы нарушена, лучше НЕ делать select_related("user")
+        # Мы будем подтягивать пользователя точечно в методе safe_user
+        return super().get_queryset(request).select_related("company", "event", "department")
+
+    # --- Безопасные методы ---
+
     def safe_user(self, obj):
-        return obj.user.username if obj.user else "—"
+        """Защита от 'битых' ссылок на удаленных пользователей"""
+        try:
+            if obj.user:
+                return obj.user.username
+            return mark_safe(f'<span style="color: orange;">ID: {obj.user_id} (Ghost)</span>')
+        except Exception:
+            # Сработает, если obj.user_id есть, но в таблице User записи нет
+            return mark_safe(f'<span style="color: red;">🚨 Deleted (ID: {obj.user_id})</span>')
     safe_user.short_description = "User"
     safe_user.admin_order_field = "user"
-    
-    def safe_company(self, obj):
-        return obj.company.name if obj.company else "—"
-    safe_company.short_description = "Company"
-    safe_company.admin_order_field = "company"
-    
-    def safe_department(self, obj):
-        return obj.department.name if obj.department else "—"
-    safe_department.short_description = "Department"
-    safe_department.admin_order_field = "department"
-    
-    def safe_event(self, obj):
-        return obj.event.title if obj.event else "—"
-    safe_event.short_description = "Event"
-    safe_event.admin_order_field = "event"
-    
-    def local_created_at(self, obj):
-        if obj.created_at:
-            try:
-                local_tz = pytz.timezone('Asia/Almaty')
-                local_time = obj.created_at.astimezone(local_tz)
-                return local_time.strftime('%Y-%m-%d %H:%M:%S')
-            except Exception:
-                return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        return "—"
-    local_created_at.short_description = "Created (Almaty)"
-    local_created_at.admin_order_field = "created_at"
-    
+
     def emotion_badge(self, obj):
-        if not obj.emotion:
-            return "—"
-        
+        if not obj.emotion: return "—"
         colors = {
-            "happy": "#4CAF50",
-            "sad": "#2196F3",
-            "angry": "#F44336",
-            "surprised": "#FF9800",
-            "fear": "#9C27B0",
-            "neutral": "#607D8B",
+            "happy": "#4CAF50", "sad": "#2196F3", "angry": "#F44336", 
+            "neutral": "#607D8B", "uncertain": "#9E9E9E", "fear": "#9C27B0"
         }
-        emotion_lower = str(obj.emotion).lower()
-        color = colors.get(emotion_lower, "#757575")
-        return mark_safe(
-            f'<span style="background:{color};color:white;padding:3px 8px;border-radius:4px;font-weight:bold">'
-            f'{escape(obj.emotion.upper())}</span>'
-        )
+        emo = str(obj.emotion).lower()
+        color = colors.get(emo, "#757575")
+        return mark_safe(f'<span style="background:{color};color:white;padding:3px 8px;border-radius:4px;font-weight:bold">{emo.upper()}</span>')
     emotion_badge.short_description = "Emotion"
-    emotion_badge.admin_order_field = "emotion"
-    
+
     def top3_display(self, obj):
+        """Парсинг вашего JSON: [{'prob': 0.8, 'label': 'neutral'}, ...]"""
         if not obj.top3 or not isinstance(obj.top3, list):
             return "—"
         
-        items = []
-        for i, item in enumerate(obj.top3, 1):
-            try:
-                if isinstance(item, dict):
-                    emotion = item.get('emotion') or item.get('name') or item.get('label') or str(item)
-                else:
-                    emotion = str(item)
-                items.append(f"{i}. {escape(emotion)}")
-            except Exception as e:
-                items.append(f"{i}. Error: {str(e)[:20]}")
+        lines = []
+        for i, item in enumerate(obj.top3[:3], 1):
+            if isinstance(item, dict):
+                label = item.get('label') or item.get('emotion') or "???"
+                prob = item.get('prob', 0)
+                lines.append(f"{i}. <b>{escape(label)}</b> ({prob:.2%})")
+        return mark_safe("<br>".join(lines))
+    top3_display.short_description = "Top 3 Confidence"
+
+    def safe_company(self, obj): return obj.company.name if obj.company else "—"
+    safe_company.short_description = "Company"
+
+    def safe_event(self, obj): return obj.event.title if obj.event else "—"
+    safe_event.short_description = "Event"
+
+    def local_created_at(self, obj): return get_local_time(obj.created_at)
+    local_created_at.short_description = "Created (Almaty)"
+
+# @admin.register(Feedback)
+# class FeedbackAdmin(admin.ModelAdmin):
+#     list_display = ("id", "safe_user", "emotion_badge", "safe_company", "safe_department", "safe_event", "local_created_at")
+#     list_filter = ("emotion", "company", "department", "event", "created_at")
+#     search_fields = ("user__username", "user__first_name", "user__last_name", "event__title", "company__name", "department__name")
+#     date_hierarchy = "created_at"
+#     list_per_page = 50
+#     readonly_fields = ("created_at", "top3_display")
+    
+#     fieldsets = (
+#         ("User Info", {"fields": ("user", "created_at")}),
+#         ("Emotion Analysis", {
+#             "fields": ("emotion", "top3_display"),
+#         }),
+#         ("Organization", {
+#             "fields": ("company", "department", "event"),
+#         }),
+#     )
+    
+#     def get_queryset(self, request):
+#         return super().get_queryset(request).select_related("user", "company", "department", "event")
+    
+#     # --- Безопасные методы отображения ---
+    
+#     def safe_user(self, obj):
+#         return obj.user.username if obj.user else "—"
+#     safe_user.short_description = "User"
+#     safe_user.admin_order_field = "user"
+    
+#     def safe_company(self, obj):
+#         return obj.company.name if obj.company else "—"
+#     safe_company.short_description = "Company"
+#     safe_company.admin_order_field = "company"
+    
+#     def safe_department(self, obj):
+#         return obj.department.name if obj.department else "—"
+#     safe_department.short_description = "Department"
+#     safe_department.admin_order_field = "department"
+    
+#     def safe_event(self, obj):
+#         return obj.event.title if obj.event else "—"
+#     safe_event.short_description = "Event"
+#     safe_event.admin_order_field = "event"
+    
+#     def local_created_at(self, obj):
+#         if obj.created_at:
+#             try:
+#                 local_tz = pytz.timezone('Asia/Almaty')
+#                 local_time = obj.created_at.astimezone(local_tz)
+#                 return local_time.strftime('%Y-%m-%d %H:%M:%S')
+#             except Exception:
+#                 return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
+#         return "—"
+#     local_created_at.short_description = "Created (Almaty)"
+#     local_created_at.admin_order_field = "created_at"
+    
+#     def emotion_badge(self, obj):
+#         if not obj.emotion:
+#             return "—"
         
-        return mark_safe("<br>".join(items))
-    top3_display.short_description = "Top 3 Emotions"
+#         colors = {
+#             "happy": "#4CAF50",
+#             "sad": "#2196F3",
+#             "angry": "#F44336",
+#             "surprised": "#FF9800",
+#             "fear": "#9C27B0",
+#             "neutral": "#607D8B",
+#         }
+#         emotion_lower = str(obj.emotion).lower()
+#         color = colors.get(emotion_lower, "#757575")
+#         return mark_safe(
+#             f'<span style="background:{color};color:white;padding:3px 8px;border-radius:4px;font-weight:bold">'
+#             f'{escape(obj.emotion.upper())}</span>'
+#         )
+#     emotion_badge.short_description = "Emotion"
+#     emotion_badge.admin_order_field = "emotion"
+    
+#     def top3_display(self, obj):
+#         if not obj.top3 or not isinstance(obj.top3, list):
+#             return "—"
+        
+#         items = []
+#         for i, item in enumerate(obj.top3, 1):
+#             try:
+#                 if isinstance(item, dict):
+#                     emotion = item.get('emotion') or item.get('name') or item.get('label') or str(item)
+#                 else:
+#                     emotion = str(item)
+#                 items.append(f"{i}. {escape(emotion)}")
+#             except Exception as e:
+#                 items.append(f"{i}. Error: {str(e)[:20]}")
+        
+#         return mark_safe("<br>".join(items))
+#     top3_display.short_description = "Top 3 Emotions"
 
 
 # Настройка главной страницы админки
