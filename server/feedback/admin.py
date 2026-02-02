@@ -180,12 +180,21 @@ class FeedbackAdmin(admin.ModelAdmin):
     )
     
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("user", "company", "department", "event")
+        # Не делаем select_related("user") чтобы избежать ошибок с удаленными пользователями
+        return super().get_queryset(request).select_related("company", "department", "event")
     
     # --- Безопасные методы отображения ---
     
     def safe_user(self, obj):
-        return obj.user.username if obj.user else "—"
+        """Защита от удаленных пользователей"""
+        try:
+            if obj.user:
+                return obj.user.username
+            # Если user_id есть, но пользователь удален
+            return mark_safe(f'<span style="color: orange;">ID: {obj.user_id} (Deleted)</span>')
+        except Exception:
+            # Если возникла ошибка при доступе к user
+            return mark_safe(f'<span style="color: red;">🚨 Deleted (ID: {obj.user_id})</span>')
     safe_user.short_description = "User"
     safe_user.admin_order_field = "user"
     
@@ -238,22 +247,24 @@ class FeedbackAdmin(admin.ModelAdmin):
     emotion_badge.admin_order_field = "emotion"
     
     def top3_display(self, obj):
+        """Отображение топ-3 эмоций с вероятностями"""
         if not obj.top3 or not isinstance(obj.top3, list):
             return "—"
         
         items = []
-        for i, item in enumerate(obj.top3, 1):
+        for i, item in enumerate(obj.top3[:3], 1):
             try:
                 if isinstance(item, dict):
-                    emotion = item.get('emotion') or item.get('name') or item.get('label') or str(item)
+                    label = item.get('label') or item.get('emotion') or item.get('name') or "???"
+                    prob = item.get('prob', 0)
+                    items.append(f"{i}. <b>{escape(label)}</b> ({prob:.2%})")
                 else:
-                    emotion = str(item)
-                items.append(f"{i}. {escape(emotion)}")
+                    items.append(f"{i}. {escape(str(item))}")
             except Exception as e:
                 items.append(f"{i}. Error: {str(e)[:20]}")
         
         return mark_safe("<br>".join(items))
-    top3_display.short_description = "Top 3 Emotions"
+    top3_display.short_description = "Top 3 Confidence"
 
 
 # Настройка главной страницы админки
