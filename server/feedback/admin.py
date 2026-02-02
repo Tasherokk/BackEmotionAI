@@ -155,17 +155,17 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "emotion", "company", "department", "event", "created_at")
+    list_display = ("id", "user", "emotion_badge", "safe_company", "safe_department", "safe_event", "local_created_at")
     list_filter = ("emotion", "company", "department", "event", "created_at")
     search_fields = ("user__username", "user__name", "event__title", "company__name", "department__name")
     date_hierarchy = "created_at"
     list_per_page = 50
-    readonly_fields = ("created_at", "emotion", "top3")
+    readonly_fields = ("created_at", "top3_display")
     
     fieldsets = (
         ("User Info", {"fields": ("user", "created_at")}),
         ("Emotion Analysis", {
-            "fields": ("emotion", "top3"),
+            "fields": ("emotion", "top3_display"),
         }),
         ("Organization", {
             "fields": ("company", "department", "event"),
@@ -175,6 +175,96 @@ class FeedbackAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("user", "company", "department", "event")
+    
+    def safe_company(self, obj):
+        """Безопасное отображение компании"""
+        try:
+            return obj.company.name if obj.company else "—"
+        except:
+            return "—"
+    safe_company.short_description = "Company"
+    safe_company.admin_order_field = "company"
+    
+    def safe_department(self, obj):
+        """Безопасное отображение департамента"""
+        try:
+            return obj.department.name if obj.department else "—"
+        except:
+            return "—"
+    safe_department.short_description = "Department"
+    safe_department.admin_order_field = "department"
+    
+    def safe_event(self, obj):
+        """Безопасное отображение события"""
+        try:
+            return obj.event.title if obj.event else "—"
+        except:
+            return "—"
+    safe_event.short_description = "Event"
+    safe_event.admin_order_field = "event"
+    
+    def local_created_at(self, obj):
+        """Отображение времени в Asia/Almaty"""
+        try:
+            import pytz
+            if obj.created_at:
+                local_tz = pytz.timezone('Asia/Almaty')
+                local_time = obj.created_at.astimezone(local_tz)
+                return local_time.strftime('%Y-%m-%d %H:%M:%S')
+            return "—"
+        except:
+            return "—"
+    local_created_at.short_description = "Created (Almaty)"
+    local_created_at.admin_order_field = "created_at"
+    
+    def emotion_badge(self, obj):
+        """Эмоция с цветовой меткой"""
+        try:
+            if not obj.emotion:
+                return "—"
+            
+            colors = {
+                "happy": "#4CAF50",
+                "sad": "#2196F3",
+                "angry": "#F44336",
+                "surprised": "#FF9800",
+                "fear": "#9C27B0",
+                "neutral": "#607D8B",
+            }
+            emotion_lower = str(obj.emotion).lower()
+            color = colors.get(emotion_lower, "#757575")
+            emotion_upper = str(obj.emotion).upper()
+            
+            return mark_safe(
+                f'<span style="background:{color};color:white;padding:3px 8px;border-radius:4px;font-weight:bold">'
+                f'{emotion_upper}</span>'
+            )
+        except:
+            return "—"
+    emotion_badge.short_description = "Emotion"
+    emotion_badge.admin_order_field = "emotion"
+    
+    def top3_display(self, obj):
+        """Топ-3 эмоций"""
+        try:
+            if not obj.top3:
+                return "—"
+            
+            if isinstance(obj.top3, list):
+                items = []
+                for i, item in enumerate(obj.top3, 1):
+                    if isinstance(item, dict):
+                        emotion = item.get('emotion') or item.get('name') or str(item)
+                    else:
+                        emotion = str(item)
+                    items.append(f"{i}. {emotion}")
+                
+                return mark_safe("<br>".join(items))
+            
+            return "—"
+        except:
+            return "—"
+    top3_display.short_description = "Top 3 Emotions"
 
 
 # Настройка главной страницы админки
