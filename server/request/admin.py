@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.db.models import Count
 from .models import RequestType, Request, RequestMessage
@@ -68,7 +69,7 @@ class RequestMessageInline(admin.TabularInline):
                 obj.file.url,
                 obj.file.name.split('/')[-1]
             )
-        return format_html('<span style="color: #999;">No file</span>')
+        return mark_safe('<span style="color: #999;">No file</span>')
     file_link.short_description = "Attached File"
 
     def has_add_permission(self, request, obj=None):
@@ -208,7 +209,7 @@ class RequestAdmin(admin.ModelAdmin):
                 '<span style="color: {}; font-weight: bold;">⏳ {}d (open)</span>',
                 color, days
             )
-        return format_html('<span style="color: #999;">-</span>')
+        return mark_safe('<span style="color: #999;">-</span>')
     duration_info.short_description = "Duration"
     
     def request_summary(self, obj):
@@ -264,7 +265,7 @@ class RequestAdmin(admin.ModelAdmin):
                 first_message.text[:200] + "..." if len(first_message.text) > 200 else first_message.text
             )
         
-        summary += format_html('</div>')
+        summary += mark_safe('</div>')
         return summary
     request_summary.short_description = "Summary"
 
@@ -347,7 +348,7 @@ class RequestMessageAdmin(admin.ModelAdmin):
                 '<a href="{}" target="_blank" style="color: #4CAF50; font-size: 18px;">📎</a>',
                 obj.file.url
             )
-        return format_html('<span style="color: #ccc;">-</span>')
+        return mark_safe('<span style="color: #ccc;">-</span>')
     has_file.short_description = "File"
     
     def has_add_permission(self, request):
