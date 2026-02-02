@@ -16,7 +16,10 @@ class Department(models.Model):
         unique_together = ("company", "name")
 
     def __str__(self):
-        return f"{self.company.name} — {self.name}"
+        try:
+            return f"{self.company.name} — {self.name}" if self.company else self.name
+        except:
+            return self.name or f"Department #{self.pk}"
 
 
 class Event(models.Model):
@@ -27,7 +30,10 @@ class Event(models.Model):
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="events", blank=True)
 
     def __str__(self):
-        return f"{self.company.name} — {self.title}"
+        try:
+            return f"{self.company.name} — {self.title}" if self.company else self.title
+        except:
+            return self.title or f"Event #{self.pk}"
 
 
 class Feedback(models.Model):
@@ -48,3 +54,10 @@ class Feedback(models.Model):
             models.Index(fields=["created_at"]),
             models.Index(fields=["emotion"]),
         ]
+
+    def __str__(self):
+        try:
+            user_str = str(self.user.username) if self.user else "Unknown"
+            return f"Feedback #{self.pk} - {user_str} ({self.emotion})"
+        except:
+            return f"Feedback #{self.pk}"
