@@ -193,28 +193,37 @@ class FeedbackAdmin(admin.ModelAdmin):
     
     def emotion_badge(self, obj):
         """Эмоция с цветовой меткой"""
-        colors = {
-            "happy": "#4CAF50",
-            "sad": "#2196F3",
-            "angry": "#F44336",
-            "surprised": "#FF9800",
-            "fear": "#9C27B0",
-            "neutral": "#607D8B",
-        }
-        color = colors.get(obj.emotion.lower(), "#757575")
-        return format_html(
-            '<span style="background: {}; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold;">{}</span>',
-            color, obj.emotion.upper()
-        )
+        try:
+            if not obj.emotion:
+                return "—"
+            
+            colors = {
+                "happy": "#4CAF50",
+                "sad": "#2196F3",
+                "angry": "#F44336",
+                "surprised": "#FF9800",
+                "fear": "#9C27B0",
+                "neutral": "#607D8B",
+            }
+            color = colors.get(obj.emotion.lower(), "#757575")
+            return format_html(
+                '<span style="background: {}; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold;">{}</span>',
+                color, obj.emotion.upper()
+            )
+        except Exception as e:
+            return f"Error: {str(e)}"
     emotion_badge.short_description = "Emotion"
     emotion_badge.admin_order_field = "emotion"
     
     def top3_display(self, obj):
         """Топ-3 эмоций"""
-        if obj.top3:
-            items = "<br>".join([f"{i+1}. {em}" for i, em in enumerate(obj.top3)])
-            return format_html('<div style="line-height: 1.8;">{}</div>', items)
-        return "—"
+        try:
+            if obj.top3:
+                items = "<br>".join([f"{i+1}. {em}" for i, em in enumerate(obj.top3)])
+                return format_html('<div style="line-height: 1.8;">{}</div>', items)
+            return "—"
+        except Exception as e:
+            return f"Error: {str(e)}"
     top3_display.short_description = "Top 3 Emotions"
 
 
@@ -222,7 +231,3 @@ class FeedbackAdmin(admin.ModelAdmin):
 admin.site.site_header = "Emotions AI Administration"
 admin.site.site_title = "Emotions AI Admin"
 admin.site.index_title = "Welcome to Emotions AI Admin Panel"
-
-admin.site.site_title = "Emotions AI Admin"
-admin.site.index_title = "Welcome to Emotions AI Admin Panel"
-
