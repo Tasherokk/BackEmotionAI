@@ -205,25 +205,47 @@ class FeedbackAdmin(admin.ModelAdmin):
                 "fear": "#9C27B0",
                 "neutral": "#607D8B",
             }
-            color = colors.get(obj.emotion.lower(), "#757575")
-            return format_html(
-                '<span style="background: {}; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold;">{}</span>',
-                color, obj.emotion.upper()
+            emotion_lower = str(obj.emotion).lower()
+            color = colors.get(emotion_lower, "#757575")
+            emotion_upper = str(obj.emotion).upper()
+            
+            return mark_safe(
+                f'<span style="background:{color};color:white;padding:3px 8px;border-radius:4px;font-weight:bold">'
+                f'{emotion_upper}</span>'
             )
         except Exception as e:
-            return f"Error: {str(e)}"
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in emotion_badge: {e}", exc_info=True)
+            return "—"
     emotion_badge.short_description = "Emotion"
     emotion_badge.admin_order_field = "emotion"
     
     def top3_display(self, obj):
         """Топ-3 эмоций"""
         try:
-            if obj.top3:
-                items = "<br>".join([f"{i+1}. {em}" for i, em in enumerate(obj.top3)])
-                return format_html('<div style="line-height: 1.8;">{}</div>', items)
+            if not obj.top3:
+                return "—"
+            
+            # top3 может быть списком строк или списком словарей
+            if isinstance(obj.top3, list):
+                items = []
+                for i, item in enumerate(obj.top3, 1):
+                    if isinstance(item, dict):
+                        # Если это словарь, берем значение 'emotion' или первое значение
+                        emotion = item.get('emotion') or item.get('name') or str(item)
+                    else:
+                        emotion = str(item)
+                    items.append(f"{i}. {emotion}")
+                
+                return mark_safe("<br>".join(items))
+            
             return "—"
         except Exception as e:
-            return f"Error: {str(e)}"
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in top3_display: {e}, top3={obj.top3}", exc_info=True)
+            return "—"
     top3_display.short_description = "Top 3 Emotions"
 
 

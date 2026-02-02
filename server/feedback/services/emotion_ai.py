@@ -25,21 +25,29 @@ def analyze_face(image_file) -> dict:
         
         # Compress large images to avoid connection issues
         img = Image.open(BytesIO(content))
-        logger.info(f"Image size: {img.size}, mode: {img.mode}")
+        logger.info(f"Image size: {img.size}, mode: {img.mode}, original bytes: {len(content)}")
         
-        # Resize if image is too large (max 1024px on longest side)
-        max_size = 4096
+        # Агрессивное сжатие для стабильности
+        max_size = 1024
         if max(img.size) > max_size:
             ratio = max_size / max(img.size)
             new_size = tuple(int(dim * ratio) for dim in img.size)
             img = img.resize(new_size, Image.Resampling.LANCZOS)
             logger.info(f"Image resized to: {new_size}")
         
-        # Convert to JPEG with quality 85 to reduce size
+        # Сжатие с optimize=True
         buffer = BytesIO()
-        img.convert('RGB').save(buffer, format='JPEG', quality=85)
+        img.convert('RGB').save(buffer, format='JPEG', quality=75, optimize=True)
         compressed_content = buffer.getvalue()
-        logger.info(f"Compressed image size: {len(compressed_content)} bytes")
+        logger.info(f"Compressed image size: {len(compressed_content)} bytes ({len(compressed_content)/1024:.1f} KB)")
+        
+        # Если файл всё ещё больше 2000KB, сжимаем агрессивнее
+        if len(compressed_content) > 2000000:
+            logger.warning(f"Image too large, compressing more")
+            buffer = BytesIO()
+            img.convert('RGB').save(buffer, format='JPEG', quality=60, optimize=True)
+            compressed_content = buffer.getvalue()
+            logger.info(f"Re-compressed: {len(compressed_content)} bytes ({len(compressed_content)/1024:.1f} KB)")
         
         files = {
             "file": (image_file.name, compressed_content, "image/jpeg")
