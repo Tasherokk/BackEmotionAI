@@ -42,17 +42,22 @@ class RequestMessageInline(admin.TabularInline):
     
     def sender_info(self, obj):
         """Информация об отправителе с ролью"""
-        role_colors = {
-            "HR": "#2196F3",
-            "EMPLOYEE": "#FF9800"
-        }
-        color = role_colors.get(obj.sender.role, "#666")
-        return format_html(
-            '<strong style="color: {};">{}</strong> ({})',
-            color,
-            obj.sender.name or obj.sender.username,
-            obj.sender.role
-        )
+        try:
+            if not obj.sender:
+                return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.sender_id)
+            role_colors = {
+                "HR": "#2196F3",
+                "EMPLOYEE": "#FF9800"
+            }
+            color = role_colors.get(obj.sender.role, "#666")
+            return format_html(
+                '<strong style="color: {};">{}</strong> ({})',
+                color,
+                obj.sender.name or obj.sender.username,
+                obj.sender.role
+            )
+        except Exception:
+            return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.sender_id)
     sender_info.short_description = "Sender"
     
     def file_link(self, obj):
@@ -134,26 +139,36 @@ class RequestAdmin(admin.ModelAdmin):
     
     def employee_info(self, obj):
         """Информация о сотруднике"""
-        url = reverse("admin:accounts_user_change", args=[obj.employee.id])
-        return format_html(
-            '<a href="{}" style="color: #FF9800; font-weight: bold;">👤 {}</a><br>'
-            '<small style="color: #666;">{}</small>',
-            url,
-            obj.employee.name or obj.employee.username,
-            obj.employee.department.name if obj.employee.department else "No dept"
-        )
+        try:
+            if not obj.employee:
+                return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.employee_id)
+            url = reverse("admin:accounts_user_change", args=[obj.employee.id])
+            return format_html(
+                '<a href="{}" style="color: #FF9800; font-weight: bold;">👤 {}</a><br>'
+                '<small style="color: #666;">{}</small>',
+                url,
+                obj.employee.name or obj.employee.username,
+                obj.employee.department.name if obj.employee.department else "No dept"
+            )
+        except Exception:
+            return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.employee_id)
     employee_info.short_description = "Employee"
     
     def hr_info(self, obj):
         """Информация об HR"""
-        url = reverse("admin:accounts_user_change", args=[obj.hr.id])
-        return format_html(
-            '<a href="{}" style="color: #2196F3; font-weight: bold;">🎯 {}</a><br>'
-            '<small style="color: #666;">{}</small>',
-            url,
-            obj.hr.name or obj.hr.username,
-            obj.hr.company.name if obj.hr.company else "No company"
-        )
+        try:
+            if not obj.hr:
+                return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.hr_id)
+            url = reverse("admin:accounts_user_change", args=[obj.hr.id])
+            return format_html(
+                '<a href="{}" style="color: #2196F3; font-weight: bold;">🎯 {}</a><br>'
+                '<small style="color: #666;">{}</small>',
+                url,
+                obj.hr.name or obj.hr.username,
+                obj.hr.company.name if obj.hr.company else "No company"
+            )
+        except Exception:
+            return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.hr_id)
     hr_info.short_description = "Assigned HR"
     
     def messages_count(self, obj):
@@ -201,6 +216,21 @@ class RequestAdmin(admin.ModelAdmin):
         messages = obj.messages.all().order_by("created_at")
         first_message = messages.first()
         
+        # Безопасное получение информации о пользователях
+        try:
+            employee_name = obj.employee.name or obj.employee.username if obj.employee else f"Deleted (ID: {obj.employee_id})"
+            employee_username = obj.employee.username if obj.employee else "—"
+        except Exception:
+            employee_name = f"Deleted (ID: {obj.employee_id})"
+            employee_username = "—"
+        
+        try:
+            hr_name = obj.hr.name or obj.hr.username if obj.hr else f"Deleted (ID: {obj.hr_id})"
+            hr_username = obj.hr.username if obj.hr else "—"
+        except Exception:
+            hr_name = f"Deleted (ID: {obj.hr_id})"
+            hr_username = "—"
+        
         summary = format_html(
             '<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3;">'
             '<p><strong>Request #{}</strong></p>'
@@ -213,10 +243,10 @@ class RequestAdmin(admin.ModelAdmin):
             obj.type.name,
             {"OPEN": "#FF9800", "IN_PROGRESS": "#2196F3", "CLOSED": "#4CAF50"}.get(obj.status, "#999"),
             obj.get_status_display(),
-            obj.employee.name or obj.employee.username,
-            obj.employee.username,
-            obj.hr.name or obj.hr.username,
-            obj.hr.username,
+            employee_name,
+            employee_username,
+            hr_name,
+            hr_username,
             obj.created_at.strftime("%Y-%m-%d %H:%M")
         )
         
@@ -278,20 +308,25 @@ class RequestMessageAdmin(admin.ModelAdmin):
     
     def sender_info(self, obj):
         """Информация об отправителе"""
-        role_colors = {
-            "HR": "#2196F3",
-            "EMPLOYEE": "#FF9800"
-        }
-        color = role_colors.get(obj.sender.role, "#666")
-        url = reverse("admin:accounts_user_change", args=[obj.sender.id])
-        return format_html(
-            '<a href="{}" style="color: {}; font-weight: bold;">{}</a><br>'
-            '<small>{}</small>',
-            url,
-            color,
-            obj.sender.name or obj.sender.username,
-            obj.sender.role
-        )
+        try:
+            if not obj.sender:
+                return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.sender_id)
+            role_colors = {
+                "HR": "#2196F3",
+                "EMPLOYEE": "#FF9800"
+            }
+            color = role_colors.get(obj.sender.role, "#666")
+            url = reverse("admin:accounts_user_change", args=[obj.sender.id])
+            return format_html(
+                '<a href="{}" style="color: {}; font-weight: bold;">{}</a><br>'
+                '<small>{}</small>',
+                url,
+                color,
+                obj.sender.name or obj.sender.username,
+                obj.sender.role
+            )
+        except Exception:
+            return format_html('<span style="color: red;">🚨 Deleted (ID: {})</span>', obj.sender_id)
     sender_info.short_description = "Sender"
     
     def text_preview(self, obj):
