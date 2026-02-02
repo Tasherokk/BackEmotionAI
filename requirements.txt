@@ -12,3 +12,4 @@ whitenoise
 gunicorn
 celery
 redis
+pytz

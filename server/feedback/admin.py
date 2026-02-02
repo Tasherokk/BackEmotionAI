@@ -72,7 +72,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "company", "starts_at", "ends_at", "safe_status", "safe_participants", "safe_feedbacks")
+    list_display = ("id", "title", "company", "local_starts_at", "local_ends_at", "safe_status", "safe_participants", "safe_feedbacks")
     list_filter = ("company", "starts_at")
     search_fields = ("title", "company__name")
     date_hierarchy = "starts_at"
@@ -84,6 +84,38 @@ class EventAdmin(admin.ModelAdmin):
         ("Schedule", {"fields": ("starts_at", "ends_at")}),
         ("Participants", {"fields": ("participants",)}),
     )
+    
+    def local_starts_at(self, obj):
+        """Отображение времени начала в локальной timezone"""
+        try:
+            from django.utils import timezone
+            import pytz
+            
+            if obj.starts_at:
+                local_tz = pytz.timezone('Asia/Almaty')
+                local_time = obj.starts_at.astimezone(local_tz)
+                return local_time.strftime('%Y-%m-%d %H:%M:%S %Z')
+            return "—"
+        except Exception as e:
+            return f"Error: {str(e)}"
+    local_starts_at.short_description = "Начало (Almaty)"
+    local_starts_at.admin_order_field = "starts_at"
+    
+    def local_ends_at(self, obj):
+        """Отображение времени окончания в локальной timezone"""
+        try:
+            from django.utils import timezone
+            import pytz
+            
+            if obj.ends_at:
+                local_tz = pytz.timezone('Asia/Almaty')
+                local_time = obj.ends_at.astimezone(local_tz)
+                return local_time.strftime('%Y-%m-%d %H:%M:%S %Z')
+            return "—"
+        except Exception as e:
+            return f"Error: {str(e)}"
+    local_ends_at.short_description = "Окончание (Almaty)"
+    local_ends_at.admin_order_field = "ends_at"
     
     def safe_status(self, obj):
         try:
@@ -123,7 +155,7 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "emotion_badge", "company", "department", "event", "created_at")
+    list_display = ("id", "user", "emotion_badge", "company", "department", "event", "local_created_at")
     list_filter = ("emotion", "company", "department", "event", "created_at")
     search_fields = ("user__username", "user__name", "event__title", "company__name", "department__name")
     date_hierarchy = "created_at"
@@ -143,6 +175,21 @@ class FeedbackAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("user", "company", "department", "event")
+    
+    def local_created_at(self, obj):
+        """Отображение времени создания в локальной timezone"""
+        try:
+            import pytz
+            
+            if obj.created_at:
+                local_tz = pytz.timezone('Asia/Almaty')
+                local_time = obj.created_at.astimezone(local_tz)
+                return local_time.strftime('%Y-%m-%d %H:%M:%S')
+            return "—"
+        except Exception as e:
+            return f"Error: {str(e)}"
+    local_created_at.short_description = "Создано (Almaty)"
+    local_created_at.admin_order_field = "created_at"
     
     def emotion_badge(self, obj):
         """Эмоция с цветовой меткой"""
