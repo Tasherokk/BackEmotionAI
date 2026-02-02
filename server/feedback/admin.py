@@ -155,7 +155,7 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "emotion_badge", "safe_company", "safe_department", "safe_event", "local_created_at")
+    list_display = ("id", "safe_user", "emotion_badge", "safe_company", "safe_department", "safe_event", "local_created_at")
     list_filter = ("emotion", "company", "department", "event", "created_at")
     search_fields = ("user__username", "user__name", "event__title", "company__name", "department__name")
     date_hierarchy = "created_at"
@@ -175,6 +175,15 @@ class FeedbackAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("user", "company", "department", "event")
+    
+    def safe_user(self, obj):
+        """Безопасное отображение пользователя"""
+        try:
+            return obj.user.username if obj.user else "—"
+        except:
+            return "—"
+    safe_user.short_description = "User"
+    safe_user.admin_order_field = "user"
     
     def safe_company(self, obj):
         """Безопасное отображение компании"""
@@ -247,23 +256,42 @@ class FeedbackAdmin(admin.ModelAdmin):
     def top3_display(self, obj):
         """Топ-3 эмоций"""
         try:
+            # Проверяем что top3 существует и не пустой
             if not obj.top3:
                 return "—"
             
-            if isinstance(obj.top3, list):
-                items = []
-                for i, item in enumerate(obj.top3, 1):
+            # Проверяем что это список
+            if not isinstance(obj.top3, list):
+                return f"Invalid format: {type(obj.top3).__name__}"
+            
+            # Если список пустой
+            if len(obj.top3) == 0:
+                return "—"
+            
+            items = []
+            for i, item in enumerate(obj.top3, 1):
+                try:
                     if isinstance(item, dict):
-                        emotion = item.get('emotion') or item.get('name') or str(item)
+                        # Пробуем разные ключи
+                        emotion = item.get('emotion') or item.get('name') or item.get('label') or str(item)
+                    elif isinstance(item, (str, int, float)):
+                        emotion = str(item)
                     else:
                         emotion = str(item)
-                    items.append(f"{i}. {emotion}")
-                
-                return mark_safe("<br>".join(items))
+                    
+                    # Экранируем HTML
+                    from django.utils.html import escape
+                    items.append(f"{i}. {escape(emotion)}")
+                except Exception as e:
+                    items.append(f"{i}. Error: {str(e)[:20]}")
             
-            return "—"
-        except:
-            return "—"
+            return mark_safe("<br>".join(items))
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in top3_display for Feedback {obj.pk}: {e}, top3={obj.top3}", exc_info=True)
+            return f"Error: {str(e)[:50]}"
     top3_display.short_description = "Top 3 Emotions"
 
 

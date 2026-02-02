@@ -18,8 +18,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=Role.EMPLOYEE,
         db_index=True,
     )
-    company = models.ForeignKey("feedback.Company", on_delete=models.PROTECT, related_name="users")
-    department = models.ForeignKey("feedback.Department", on_delete=models.PROTECT, related_name="users")
+    company = models.ForeignKey("feedback.Company", on_delete=models.PROTECT, related_name="users", null=True, blank=True)
+    department = models.ForeignKey("feedback.Department", on_delete=models.PROTECT, related_name="users", null=True, blank=True)
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

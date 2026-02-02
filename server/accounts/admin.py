@@ -35,6 +35,20 @@ class UserAdmin(DjangoUserAdmin):
 
     filter_horizontal = ("groups", "user_permissions")
     
+    def clean(self):
+        """Валидация формы - company и department обязательны"""
+        from django import forms
+        cleaned_data = super().clean()
+        company = cleaned_data.get('company')
+        department = cleaned_data.get('department')
+        
+        if not company:
+            raise forms.ValidationError({'company': 'Company is required'})
+        if not department:
+            raise forms.ValidationError({'department': 'Department is required'})
+        
+        return cleaned_data
+    
     def photo_preview(self, obj):
         """Миниатюра фото в списке"""
         if obj.photo:
