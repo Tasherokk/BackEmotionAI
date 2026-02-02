@@ -319,8 +319,7 @@ class HREventDetailView(APIView):
                     "description": "Array of employee IDs",
                     "example": [1, 2, 3, 4]
                 }
-            },
-            "required": ["title", "starts_at", "ends_at"]
+            }
         }},
         responses={
             200: OpenApiResponse(description="Event updated successfully"),
@@ -328,17 +327,18 @@ class HREventDetailView(APIView):
             403: OpenApiResponse(description="Only HR can access this endpoint"),
             404: OpenApiResponse(description="Event not found"),
         },
-        description="Update an event. Can only update events from HR's company. All validations apply (dates, participants).",
+        description="Partially update an event. Can only update events from HR's company. All fields are optional - only provided fields will be updated. All validations apply (dates, participants).",
         summary="Update event (HR only)"
     )
     def put(self, request, pk):
-        """Полное обновление ивента"""
+        """Частичное обновление ивента"""
         event = self.get_object(pk, request.user)
         
         from ..serializers.serializers_hr import EventCreateUpdateSerializer
         serializer = EventCreateUpdateSerializer(
             event,
             data=request.data,
+            partial=True,
             context={"request": request}
         )
         if serializer.is_valid():

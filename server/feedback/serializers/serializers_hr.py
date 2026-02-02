@@ -72,6 +72,11 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ["title", "starts_at", "ends_at", "participants"]
+        extra_kwargs = {
+            'title': {'required': False},
+            'starts_at': {'required': False},
+            'ends_at': {'required': False},
+        }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -84,12 +89,47 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 is_active=True
             )
     
+    def to_internal_value(self, data):
+        """Переопределяем для лучшей обработки ошибок participants"""
+        request = self.context.get("request")
+        
+        # Проверяем participants отдельно для более понятных ошибок
+        if 'participants' in data and request and request.user:
+            participant_ids = data.get('participants', [])
+            if participant_ids:
+                # Проверяем существование пользователей
+                existing_users = User.objects.filter(id__in=participant_ids)
+                existing_ids = set(existing_users.values_list('id', flat=True))
+                
+                for pid in participant_ids:
+                    if pid not in existing_ids:
+                        raise serializers.ValidationError({
+                            'participants': f'User with ID {pid} does not exist'
+                        })
+                
+                # Проверяем что все из нашей компании и Employee
+                for user in existing_users:
+                    if user.company_id != request.user.company_id:
+                        raise serializers.ValidationError({
+                            'participants': f'User "{user.username}" (ID: {user.id}) is not from your company'
+                        })
+                    if user.role != User.Role.EMPLOYEE:
+                        raise serializers.ValidationError({
+                            'participants': f'User "{user.username}" (ID: {user.id}) is not an employee'
+                        })
+                    if not user.is_active:
+                        raise serializers.ValidationError({
+                            'participants': f'User "{user.username}" (ID: {user.id}) is not active'
+                        })
+        
+        return super().to_internal_value(data)
+    
     def validate(self, attrs):
         """Валидация дат"""
         from django.utils import timezone
         
-        starts_at = attrs.get("starts_at")
-        ends_at = attrs.get("ends_at")
+        starts_at = attrs.get("starts_at", self.instance.starts_at if self.instance else None)
+        ends_at = attrs.get("ends_at", self.instance.ends_at if self.instance else None)
         
         # Проверяем что ends_at позже starts_at
         if ends_at and starts_at and ends_at <= starts_at:
@@ -97,31 +137,13 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 "ends_at": "End date must be after start date"
             })
         
-        # Проверяем что starts_at не в прошлом
-        if starts_at and starts_at < timezone.now():
+        # Проверяем что starts_at не в прошлом (только при создании или если starts_at изменяется)
+        if not self.instance and starts_at and starts_at < timezone.now():
             raise serializers.ValidationError({
                 "starts_at": "Start date cannot be in the past"
             })
         
         return attrs
-    
-    def validate_participants(self, value):
-        """Проверяем что все участники - Employee компании HR"""
-        request = self.context.get("request")
-        if not request or not request.user:
-            raise serializers.ValidationError("User not authenticated")
-        
-        for user in value:
-            if user.company != request.user.company:
-                raise serializers.ValidationError(
-                    f"User {user.username} is not from your company"
-                )
-            if user.role != User.Role.EMPLOYEE:
-                raise serializers.ValidationError(
-                    f"User {user.username} is not an employee"
-                )
-        
-        return value
     
     def create(self, validated_data):
         """Создание ивента"""
