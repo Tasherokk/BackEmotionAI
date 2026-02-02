@@ -155,17 +155,17 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "emotion_badge", "company", "department", "event", "local_created_at")
+    list_display = ("id", "user", "emotion", "company", "department", "event", "created_at")
     list_filter = ("emotion", "company", "department", "event", "created_at")
     search_fields = ("user__username", "user__name", "event__title", "company__name", "department__name")
     date_hierarchy = "created_at"
     list_per_page = 50
-    readonly_fields = ("created_at", "top3_display")
+    readonly_fields = ("created_at", "emotion", "top3")
     
     fieldsets = (
         ("User Info", {"fields": ("user", "created_at")}),
         ("Emotion Analysis", {
-            "fields": ("emotion", "top3_display"),
+            "fields": ("emotion", "top3"),
         }),
         ("Organization", {
             "fields": ("company", "department", "event"),
@@ -175,78 +175,6 @@ class FeedbackAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("user", "company", "department", "event")
-    
-    def local_created_at(self, obj):
-        """Отображение времени создания в локальной timezone"""
-        try:
-            import pytz
-            
-            if obj.created_at:
-                local_tz = pytz.timezone('Asia/Almaty')
-                local_time = obj.created_at.astimezone(local_tz)
-                return local_time.strftime('%Y-%m-%d %H:%M:%S')
-            return "—"
-        except Exception as e:
-            return f"Error: {str(e)}"
-    local_created_at.short_description = "Создано (Almaty)"
-    local_created_at.admin_order_field = "created_at"
-    
-    def emotion_badge(self, obj):
-        """Эмоция с цветовой меткой"""
-        try:
-            if not obj.emotion:
-                return "—"
-            
-            colors = {
-                "happy": "#4CAF50",
-                "sad": "#2196F3",
-                "angry": "#F44336",
-                "surprised": "#FF9800",
-                "fear": "#9C27B0",
-                "neutral": "#607D8B",
-            }
-            emotion_lower = str(obj.emotion).lower()
-            color = colors.get(emotion_lower, "#757575")
-            emotion_upper = str(obj.emotion).upper()
-            
-            return mark_safe(
-                f'<span style="background:{color};color:white;padding:3px 8px;border-radius:4px;font-weight:bold">'
-                f'{emotion_upper}</span>'
-            )
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Error in emotion_badge: {e}", exc_info=True)
-            return "—"
-    emotion_badge.short_description = "Emotion"
-    emotion_badge.admin_order_field = "emotion"
-    
-    def top3_display(self, obj):
-        """Топ-3 эмоций"""
-        try:
-            if not obj.top3:
-                return "—"
-            
-            # top3 может быть списком строк или списком словарей
-            if isinstance(obj.top3, list):
-                items = []
-                for i, item in enumerate(obj.top3, 1):
-                    if isinstance(item, dict):
-                        # Если это словарь, берем значение 'emotion' или первое значение
-                        emotion = item.get('emotion') or item.get('name') or str(item)
-                    else:
-                        emotion = str(item)
-                    items.append(f"{i}. {emotion}")
-                
-                return mark_safe("<br>".join(items))
-            
-            return "—"
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Error in top3_display: {e}, top3={obj.top3}", exc_info=True)
-            return "—"
-    top3_display.short_description = "Top 3 Emotions"
 
 
 # Настройка главной страницы админки
