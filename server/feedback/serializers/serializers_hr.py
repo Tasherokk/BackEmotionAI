@@ -161,13 +161,13 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 "ends_at": "End date must be after start date"
             })
         
-        # Проверяем что starts_at не в прошлом по времени Алматы (только при создании)
+        # Проверяем что starts_at не раньше сегодняшнего дня по времени Алматы (только при создании)
         if not self.instance and starts_at:
             now_almaty = timezone.now().astimezone(almaty_tz)
             starts_at_almaty = starts_at.astimezone(almaty_tz)
-            if starts_at_almaty < now_almaty:
+            if starts_at_almaty.date() < now_almaty.date():
                 raise serializers.ValidationError({
-                    "starts_at": "Start date cannot be in the past"
+                    "starts_at": "Start date cannot be earlier than today"
                 })
         
         return attrs
