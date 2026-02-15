@@ -60,6 +60,32 @@ class EventListSerializer(serializers.ModelSerializer):
         return obj.participants.count()
 
 
+class EventDetailSerializer(serializers.ModelSerializer):
+    """Детальный сериализатор ивента с ID участников"""
+    company_name = serializers.CharField(source="company.name", read_only=True)
+    participants = serializers.SerializerMethodField()
+    participants_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = [
+            "id",
+            "title",
+            "starts_at",
+            "ends_at",
+            "company",
+            "company_name",
+            "participants",
+            "participants_count",
+        ]
+
+    def get_participants(self, obj):
+        return list(obj.participants.values_list("id", flat=True))
+
+    def get_participants_count(self, obj):
+        return obj.participants.count()
+
+
 class EventCreateUpdateSerializer(serializers.ModelSerializer):
     """Создание и обновление ивента"""
     participants = serializers.ListField(

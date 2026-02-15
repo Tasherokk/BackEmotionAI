@@ -307,6 +307,22 @@ class HREventDetailView(APIView):
         return obj
 
     @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Event details with participant IDs"),
+            403: OpenApiResponse(description="Only HR can access this endpoint"),
+            404: OpenApiResponse(description="Event not found"),
+        },
+        description="Get detailed event info including all fields and participant IDs. Only events from HR's company.",
+        summary="Get event detail (HR only)"
+    )
+    def get(self, request, pk):
+        """Получение детальной информации об ивенте"""
+        event = self.get_object(pk, request.user)
+        from ..serializers.serializers_hr import EventDetailSerializer
+        serializer = EventDetailSerializer(event)
+        return Response(serializer.data)
+
+    @extend_schema(
         request={"application/json": {
             "type": "object",
             "properties": {
