@@ -93,15 +93,20 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         required=False,
         allow_empty=True
     )
+    starts_at = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%S%z",
+        input_formats=["iso-8601", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M"],
+        help_text="Дата и время начала в формате ISO 8601, например: 2026-02-15T10:00:00Z",
+    )
+    ends_at = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%S%z",
+        input_formats=["iso-8601", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M"],
+        help_text="Дата и время окончания в формате ISO 8601, например: 2026-02-15T12:00:00Z",
+    )
     
     class Meta:
         model = Event
         fields = ["title", "starts_at", "ends_at", "participants"]
-        extra_kwargs = {
-            'title': {'required': False},
-            'starts_at': {'required': False},
-            'ends_at': {'required': False},
-        }
     
     def validate_participants(self, participant_ids):
         """Проверяем что все участники существуют и являются Employee компании HR"""
@@ -143,6 +148,9 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """Валидация дат"""
         from django.utils import timezone
+        import zoneinfo
+        
+        almaty_tz = zoneinfo.ZoneInfo("Asia/Almaty")
         
         starts_at = attrs.get("starts_at", self.instance.starts_at if self.instance else None)
         ends_at = attrs.get("ends_at", self.instance.ends_at if self.instance else None)
@@ -153,11 +161,14 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
                 "ends_at": "End date must be after start date"
             })
         
-        # Проверяем что starts_at не в прошлом (только при создании или если starts_at изменяется)
-        if not self.instance and starts_at and starts_at < timezone.now():
-            raise serializers.ValidationError({
-                "starts_at": "Start date cannot be in the past"
-            })
+        # Проверяем что starts_at не в прошлом по времени Алматы (только при создании)
+        if not self.instance and starts_at:
+            now_almaty = timezone.now().astimezone(almaty_tz)
+            starts_at_almaty = starts_at.astimezone(almaty_tz)
+            if starts_at_almaty < now_almaty:
+                raise serializers.ValidationError({
+                    "starts_at": "Start date cannot be in the past"
+                })
         
         return attrs
     

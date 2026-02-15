@@ -258,8 +258,18 @@ class HREventManageView(APIView):
             "type": "object",
             "properties": {
                 "title": {"type": "string", "example": "Team Meeting"},
-                "starts_at": {"type": "string", "format": "date-time", "example": "2026-02-15T10:00:00Z"},
-                "ends_at": {"type": "string", "format": "date-time", "example": "2026-02-15T12:00:00Z"},
+                "starts_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-02-15T10:00:00Z",
+                    "description": "Дата и время начала (обязательно). Формат: YYYY-MM-DDTHH:MM:SSZ"
+                },
+                "ends_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-02-15T12:00:00Z",
+                    "description": "Дата и время окончания (обязательно). Формат: YYYY-MM-DDTHH:MM:SSZ"
+                },
                 "participants": {
                     "type": "array",
                     "items": {"type": "integer"},
@@ -274,7 +284,7 @@ class HREventManageView(APIView):
             400: OpenApiResponse(description="Validation error"),
             403: OpenApiResponse(description="Only HR can access this endpoint"),
         },
-        description="Create a new event in HR's company. Start date must be in the future. End date must be after start date. Participants must be employees from the same company.",
+        description="Create a new event in HR's company. Date AND time are required for starts_at and ends_at fields (format: YYYY-MM-DDTHH:MM:SSZ, e.g. 2026-02-15T10:00:00Z). Start date must be in the future. End date must be after start date. Participants must be employees from the same company.",
         summary="Create event (HR only)"
     )
     def post(self, request):
@@ -327,8 +337,18 @@ class HREventDetailView(APIView):
             "type": "object",
             "properties": {
                 "title": {"type": "string", "example": "Updated Team Meeting"},
-                "starts_at": {"type": "string", "format": "date-time", "example": "2026-02-15T10:00:00Z"},
-                "ends_at": {"type": "string", "format": "date-time", "example": "2026-02-15T12:00:00Z"},
+                "starts_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-02-15T10:00:00Z",
+                    "description": "Дата и время начала. Формат: YYYY-MM-DDTHH:MM:SSZ"
+                },
+                "ends_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-02-15T12:00:00Z",
+                    "description": "Дата и время окончания. Формат: YYYY-MM-DDTHH:MM:SSZ"
+                },
                 "participants": {
                     "type": "array",
                     "items": {"type": "integer"},
@@ -343,7 +363,7 @@ class HREventDetailView(APIView):
             403: OpenApiResponse(description="Only HR can access this endpoint"),
             404: OpenApiResponse(description="Event not found"),
         },
-        description="Partially update an event. Can only update events from HR's company. All fields are optional - only provided fields will be updated. All validations apply (dates, participants).",
+        description="Partially update an event. Can only update events from HR's company. All fields are optional - only provided fields will be updated. Date AND time are required for starts_at/ends_at (format: YYYY-MM-DDTHH:MM:SSZ).",
         summary="Update event (HR only)"
     )
     def put(self, request, pk):
