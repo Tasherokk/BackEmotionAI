@@ -261,13 +261,13 @@ class HREventManageView(APIView):
                 "starts_at": {
                     "type": "string",
                     "format": "date-time",
-                    "example": "2026-02-15T10:00:00Z",
+                    "example": "2026-02-15T10:00:00+05:00",
                     "description": "Дата и время начала (обязательно). Формат: YYYY-MM-DDTHH:MM:SSZ"
                 },
                 "ends_at": {
                     "type": "string",
                     "format": "date-time",
-                    "example": "2026-02-15T12:00:00Z",
+                    "example": "2026-02-15T12:00:00+05:00",
                     "description": "Дата и время окончания (обязательно). Формат: YYYY-MM-DDTHH:MM:SSZ"
                 },
                 "participants": {
