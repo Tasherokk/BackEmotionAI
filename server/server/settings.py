@@ -201,6 +201,9 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOW_ALL_ORIGINS = True  # simplest for local dev
 CORS_ALLOW_CREDENTIALS = True
 
+# Base URL for building absolute file URLs (used in WebSocket messages)
+BASE_BACKEND_URL = os.getenv("BASE_BACKEND_URL", "http://localhost")
+
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://redis:6379/0")
