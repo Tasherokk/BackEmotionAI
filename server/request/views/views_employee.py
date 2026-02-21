@@ -14,7 +14,7 @@ from ..serializers.serializers_employee import (
     RequestListSerializer, RequestDetailSerializer, SendMessageSerializer
 )
 from accounts.models import User
-from ..ws_utils import notify_new_message
+from ..websocket.ws_utils import notify_new_message
 
 
 class HRListView(APIView):

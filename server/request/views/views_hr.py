@@ -14,7 +14,7 @@ from ..serializers.serializers_hr import (
     RequestListSerializer, RequestDetailSerializer,
     SendMessageSerializer, UpdateStatusSerializer
 )
-from ..ws_utils import notify_new_message
+from ..websocket.ws_utils import notify_new_message
 
 
 class HRRequestListView(APIView):
