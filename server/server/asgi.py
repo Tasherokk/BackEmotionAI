@@ -15,8 +15,8 @@ django.setup()
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
-from request.websocket.routing import websocket_urlpatterns
-from request.websocket.middleware import JWTAuthMiddleware
+from backendDiploma.server.request.websocket.routing import websocket_urlpatterns
+from backendDiploma.server.request.websocket.middleware import JWTAuthMiddleware
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
