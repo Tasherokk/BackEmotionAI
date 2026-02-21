@@ -8,10 +8,10 @@ done
 echo "PostgreSQL is ready!"
 
 echo "Running database migrations..."
-python server/manage.py migrate --noinput
+python manage.py migrate --noinput
 
 echo "Collecting static files..."
-python server/manage.py collectstatic --noinput --clear
+python manage.py collectstatic --noinput --clear
 
 echo "Starting Django server..."
 exec "$@"
