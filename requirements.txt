@@ -10,6 +10,9 @@ pillow==12.1.0
 drf-spectacular[sidecar]
 whitenoise==6.11.0
 gunicorn==24.1.1
+uvicorn[standard]==0.34.2
 celery==5.6.2
 redis==7.1.0
 pytz==2025.2
+channels==4.2.0
+channels-redis==4.2.1

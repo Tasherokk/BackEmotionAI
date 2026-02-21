@@ -14,6 +14,7 @@ from ..serializers.serializers_employee import (
     RequestListSerializer, RequestDetailSerializer, SendMessageSerializer
 )
 from accounts.models import User
+from ..ws_utils import notify_new_message
 
 
 class HRListView(APIView):
@@ -157,11 +158,13 @@ class EmployeeRequestMessageView(APIView):
         
         serializer = SendMessageSerializer(data=request.data)
         if serializer.is_valid():
-            RequestMessage.objects.create(
+            msg = RequestMessage.objects.create(
                 request=request_obj,
                 sender=request.user,
                 **serializer.validated_data
             )
+            # Push в WebSocket
+            notify_new_message(request_obj.id, msg)
             
             # Возвращаем обновленную заявку
             detail_serializer = RequestDetailSerializer(
