@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .services.face_auth import verify_face_authorization
+from .services.face_auth import verify_face_authorization, AIClientError
 from drf_spectacular.utils import extend_schema, OpenApiExample
 import requests
 
@@ -191,6 +191,14 @@ class PhotoLoginView(APIView):
                     status=status.HTTP_401_UNAUTHORIZED
                 )
         
+        except AIClientError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"AI client error for user {user.username}: {e.detail}")
+            return Response(
+                {"detail": e.detail},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except requests.Timeout:
             import logging
             logger = logging.getLogger(__name__)
