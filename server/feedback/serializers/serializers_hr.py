@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.models import User
-from ..models import Feedback, Event
+from ..models import Feedback, Event, Department
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -11,6 +11,14 @@ class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'name', 'company', 'company_name', 'department', 'department_name')
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    """Сериализатор для списка департаментов компании (для HR)"""
+
+    class Meta:
+        model = Department
+        fields = ("id", "name")
 
 
 class FeedbackSerializer(serializers.ModelSerializer):

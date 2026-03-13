@@ -50,6 +50,41 @@ class CompanyEmployeesView(APIView):
         return Response(EmployeeSerializer(employees, many=True).data)
 
 
+class CompanyDepartmentsView(APIView):
+    """Список департаментов компании (только для HR)"""
+    permission_classes = [IsAuthenticated, IsHR]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(
+                description="List of company departments",
+                response={
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "name": {"type": "string"},
+                        }
+                    }
+                }
+            ),
+            403: OpenApiResponse(description="Only HR can access this endpoint"),
+        },
+        description="Get list of all departments in HR's company. Only accessible by HR users.",
+        summary="Get company departments (HR only)"
+    )
+    def get(self, request):
+        from ..models import Department
+        from ..serializers.serializers_hr import DepartmentSerializer
+
+        departments = Department.objects.filter(
+            company=request.user.company
+        ).order_by("name")
+
+        return Response(DepartmentSerializer(departments, many=True).data)
+
+
 
 class HRFeedbackAnalyticsView(APIView):
     """Получение фидбеков с фильтрами для аналитики"""

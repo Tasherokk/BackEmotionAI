@@ -1,6 +1,12 @@
 from django.urls import path
 from .views.views_feedback import FeedbackPhotoView
-from .views.views_hr import CompanyEmployeesView, HRFeedbackAnalyticsView, HREventManageView, HREventDetailView
+from .views.views_hr import (
+    CompanyEmployeesView,
+    CompanyDepartmentsView,
+    HRFeedbackAnalyticsView,
+    HREventManageView,
+    HREventDetailView,
+)
 from .views.views_employee import EmployeeEventsView
 
 
@@ -17,6 +23,7 @@ urlpatterns = [
     
     # HR event management
     path("hr/company/employees", CompanyEmployeesView.as_view()),
+    path("hr/company/departments", CompanyDepartmentsView.as_view()),
     path("hr/events/", HREventManageView.as_view(), name="hr-events"),
     path("hr/events/<int:pk>/", HREventDetailView.as_view(), name="hr-event-detail"),
 
