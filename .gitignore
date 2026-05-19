@@ -10,3 +10,4 @@ staticfiles/
 .idea/
 .vscode/
 *.sqlite3
+certs/
