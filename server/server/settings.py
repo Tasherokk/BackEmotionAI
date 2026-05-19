@@ -206,6 +206,10 @@ CORS_ALLOW_CREDENTIALS = True
 # Base URL for building absolute file URLs (used in WebSocket messages)
 BASE_BACKEND_URL = os.getenv("BASE_BACKEND_URL", "http://localhost")
 
+# When running behind TLS-terminating proxy (nginx) set this so Django
+# knows the original request scheme. Nginx sets X-Forwarded-Proto.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://redis:6379/0")
