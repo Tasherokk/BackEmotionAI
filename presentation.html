@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EmotionAI — Business Presentation</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236C63FF'/%3E%3Cstop offset='1' stop-color='%2343C59E'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='24' fill='url(%23bg)'/%3E%3Ccircle cx='50' cy='46' r='26' fill='none' stroke='white' stroke-width='5'/%3E%3Ccircle cx='40' cy='40' r='4' fill='white'/%3E%3Ccircle cx='60' cy='40' r='4' fill='white'/%3E%3Cpath d='M38 54 Q50 65 62 54' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6C63FF;
+      --primary-dark: #4C46B5;
+      --accent: #FF6584;
+      --accent2: #43C59E;
+      --bg: #0D0E1A;
+      --bg2: #13152B;
+      --card: #1A1D35;
+      --card2: #20234A;
+      --text: #E8E9F3;
+      --muted: #7B7EA8;
+      --border: rgba(108,99,255,0.18);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(13,14,26,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      font-size: 1.25rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: .9rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── SECTIONS ── */
+    section { padding: 100px 2rem; max-width: 1100px; margin: 0 auto; }
+
+    h2.section-title {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800; margin-bottom: .5rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-sub {
+      color: var(--muted); font-size: 1rem; margin-bottom: 3rem;
+      max-width: 600px;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh; max-width: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      padding: 0 2rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(108,99,255,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,101,132,0.12) 0%, transparent 60%),
+        var(--bg);
+      position: relative; overflow: hidden;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(108,99,255,0.15);
+      border: 1px solid rgba(108,99,255,0.4);
+      color: #a89fff; border-radius: 999px;
+      padding: .35rem 1.1rem; font-size: .8rem;
+      letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    #hero h1 {
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900; line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+    #hero h1 span {
+      background: linear-gradient(135deg, var(--primary) 30%, var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #hero p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted); max-width: 580px; margin: 0 auto 2.5rem;
+    }
+    .hero-cta {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    }
+    .btn {
+      padding: .8rem 2rem; border-radius: 8px;
+      font-size: 1rem; font-weight: 600;
+      text-decoration: none; transition: transform .2s, box-shadow .2s;
+      cursor: pointer; border: none;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(108,99,255,0.4);
+    }
+    .btn-primary:hover { box-shadow: 0 8px 32px rgba(108,99,255,0.55); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(108,99,255,0.5);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: rgba(108,99,255,0.1); }
+
+    .hero-metrics {
+      display: flex; gap: 3rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 4rem;
+    }
+    .metric { text-align: center; }
+    .metric-value {
+      font-size: 2.4rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .metric-label { font-size: .85rem; color: var(--muted); }
+
+    /* ── PROBLEM / SOLUTION ── */
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+    }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 40px rgba(108,99,255,0.15);
+    }
+    .card-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: .75rem; }
+    .card p { color: var(--muted); font-size: .95rem; }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 40px rgba(108,99,255,0.18);
+      border-color: rgba(108,99,255,0.4);
+    }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1rem;
+    }
+    .fi-purple { background: rgba(108,99,255,0.18); }
+    .fi-pink   { background: rgba(255,101,132,0.18); }
+    .fi-green  { background: rgba(67,197,158,0.18); }
+    .fi-orange { background: rgba(255,167,38,0.18); }
+    .fi-blue   { background: rgba(64,169,255,0.18); }
+
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .5rem; }
+    .feature-card p  { color: var(--muted); font-size: .9rem; }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 14%; right: 14%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: .35;
+    }
+    .step { text-align: center; padding: 0 1rem; position: relative; }
+    .step-num {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; font-size: 1.25rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.45);
+      position: relative; z-index: 1;
+    }
+    .step h4 { font-weight: 700; margin-bottom: .4rem; }
+    .step p  { color: var(--muted); font-size: .88rem; }
+
+    /* ── ROLES ── */
+    .roles-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+    }
+    @media (max-width: 700px) { .roles-grid { grid-template-columns: 1fr; } }
+
+    .role-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: transform .25s;
+    }
+    .role-card:hover { transform: translateY(-4px); }
+
+    .role-header {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;
+    }
+    .role-avatar {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+    }
+    .ra-hr  { background: linear-gradient(135deg,#6C63FF,#4C46B5); }
+    .ra-emp { background: linear-gradient(135deg,#43C59E,#2AA87C); }
+
+    .role-card h3 { font-size: 1.15rem; font-weight: 800; }
+    .role-card .role-tag {
+      font-size: .75rem; color: var(--muted);
+      background: rgba(255,255,255,0.06);
+      padding: .2rem .6rem; border-radius: 999px;
+    }
+    .role-list { list-style: none; }
+    .role-list li {
+      display: flex; align-items: flex-start; gap: .75rem;
+      padding: .55rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: .92rem; color: var(--muted);
+    }
+    .role-list li:last-child { border-bottom: none; }
+    .role-list li::before {
+      content: '✓';
+      color: var(--accent2); font-weight: 700; flex-shrink: 0;
+    }
+
+    /* ── ARCHITECTURE ── */
+    .arch-box {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+    }
+    .arch-layers {
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .arch-layer {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--card);
+      border-radius: 12px; padding: 1rem 1.5rem;
+      border: 1px solid var(--border);
+    }
+    .arch-layer-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .arch-layer-name {
+      font-weight: 700; font-size: 1rem; min-width: 160px;
+    }
+    .arch-layer-desc { color: var(--muted); font-size: .88rem; }
+    .arch-arrow {
+      text-align: center; color: var(--muted); font-size: 1.2rem;
+      margin: -.2rem 0;
+    }
+
+    /* ── TECH STACK ── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .tech-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex; flex-direction: column; gap: .3rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .tech-pill:hover {
+      border-color: rgba(108,99,255,0.5);
+      transform: translateY(-2px);
+    }
+    .tech-pill-label { font-size: .75rem; color: var(--muted); }
+    .tech-pill-name  { font-size: .95rem; font-weight: 700; }
+
+    /* ── AI MODEL ── */
+    .ai-box {
+      background: linear-gradient(135deg, rgba(108,99,255,0.12), rgba(67,197,158,0.08));
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 20px;
+      padding: 2.5rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+    }
+    @media (max-width: 700px) { .ai-box { grid-template-columns: 1fr; } }
+
+    .ai-model { }
+    .ai-model h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+    .ai-model .ai-tag {
+      display: inline-block;
+      background: rgba(108,99,255,0.2);
+      border: 1px solid rgba(108,99,255,0.35);
+      color: #a89fff;
+      padding: .25rem .75rem; border-radius: 999px; font-size: .78rem;
+      margin-bottom: .75rem;
+    }
+    .ai-model p { color: var(--muted); font-size: .9rem; }
+    .emotion-list {
+      display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem;
+    }
+    .emotion-badge {
+      padding: .2rem .65rem; border-radius: 999px; font-size: .78rem;
+      font-weight: 600;
+    }
+    .eb-happy   { background: rgba(255,213,79,0.2);  color:#ffd54f; }
+    .eb-sad     { background: rgba(100,149,237,0.2); color:#6495ed; }
+    .eb-angry   { background: rgba(255,101,132,0.2); color:#ff6584; }
+    .eb-fear    { background: rgba(180,120,255,0.2); color:#b478ff; }
+    .eb-disgust { background: rgba(67,197,158,0.2);  color:#43c59e; }
+    .eb-neutral { background: rgba(150,150,150,0.2); color:#aaa; }
+    .eb-surprise{ background: rgba(255,167,38,0.2);  color:#ffa726; }
+
+    /* ── BENEFITS ── */
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .benefit-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      border-left: 4px solid var(--primary);
+      transition: transform .25s;
+    }
+    .benefit-card:hover { transform: translateY(-3px); }
+    .benefit-card.accent2 { border-left-color: var(--accent2); }
+    .benefit-card.accent  { border-left-color: var(--accent); }
+    .benefit-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+    .benefit-card p  { color: var(--muted); font-size: .9rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2.5rem 2rem;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+    footer strong {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 2rem;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp .7s ease both; }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .2s; }
+    .delay-3 { animation-delay: .3s; }
+
+    /* ── GLOW BLOBS ── */
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); pointer-events: none; z-index: 0;
+    }
+    .blob-purple {
+      width: 400px; height: 400px;
+      background: rgba(108,99,255,0.12);
+      top: -100px; left: -80px;
+    }
+    .blob-pink {
+      width: 300px; height: 300px;
+      background: rgba(255,101,132,0.10);
+      bottom: 80px; right: -60px;
+    }
+
+    @media (max-width: 640px) {
+      .steps::before { display: none; }
+      .hero-metrics { gap: 2rem; }
+      .arch-layer-name { min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">EmotionAI</span>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#tech">Tech Stack</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="blob blob-purple"></div>
+  <div class="blob blob-pink"></div>
+
+  <div class="hero-badge fade-up">AI-Powered HR Intelligence</div>
+
+  <h1 class="fade-up delay-1">
+    Understand How Your<br/><span>Team Truly Feels</span>
+  </h1>
+
+  <p class="fade-up delay-2">
+    EmotionAI is an end-to-end platform that combines facial emotion recognition,
+    biometric authentication, and HR analytics to give organisations a real-time
+    psychological pulse of their workforce.
+  </p>
+
+  <div class="hero-cta fade-up delay-3">
+    <a href="#features" class="btn btn-primary">Explore Features</a>
+    <a href="#how" class="btn btn-outline">How It Works</a>
+  </div>
+
+  <div class="hero-metrics fade-up delay-3">
+    <div class="metric">
+      <div class="metric-value">7</div>
+      <div class="metric-label">Emotion Classes</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">3</div>
+      <div class="metric-label">Core Services</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">Real-Time</div>
+      <div class="metric-label">WebSocket Chat</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">Biometric</div>
+      <div class="metric-label">Face Login</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROBLEM / SOLUTION -->
+<section id="problem">
+  <h2 class="section-title">The Problem We Solve</h2>
+  <p class="section-sub">HR departments struggle to measure employee well-being beyond annual surveys. EmotionAI closes that gap.</p>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-icon">😞</div>
+      <h3>The Challenge</h3>
+      <p>Traditional employee well-being tools rely on self-reported surveys that are infrequent, biased, and slow. HR managers have no objective, real-time view of the team's emotional climate — especially during events and stressful periods.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h3>Our Solution</h3>
+      <p>EmotionAI captures emotional state automatically via a selfie at key moments (company events, logins), classifies it using state-of-the-art AI, and surfaces aggregated analytics to HR — all without manual input from employees.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <h2 class="section-title">Core Features</h2>
+  <p class="section-sub">Everything an HR department needs to monitor, understand, and improve psychological climate.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">🧠</div>
+      <h3>Facial Emotion Recognition</h3>
+      <p>Deep learning model detects 7 emotions from a single selfie — happy, sad, angry, fearful, disgusted, surprised, neutral — with confidence scores.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">🔐</div>
+      <h3>Biometric Face Login</h3>
+      <p>Employees authenticate with their face using FaceNet (InceptionResnetV1 + MTCNN). Three-verdict system: YES, NO, RETRY — secure and frictionless.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-pink">📊</div>
+      <h3>HR Analytics Dashboard</h3>
+      <p>Filter emotion feedback by date range, department, event, or emotion type. Visual charts built with Jetpack Compose and MPAndroidChart.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-orange">📅</div>
+      <h3>Event-Linked Feedback</h3>
+      <p>HR creates company events and invites employees. Each selfie submission is tied to an event, enabling precise before/during/after emotional comparisons.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-blue">💬</div>
+      <h3>Real-Time HR Ticketing</h3>
+      <p>Employees open support requests to HR managers. Messages are delivered instantly via WebSocket — no polling, no delays.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">📱</div>
+      <h3>Native Android App</h3>
+      <p>Kotlin app with dual-role navigation (Employee / HR), CameraX for selfie capture, and Jetpack Compose analytics screens — fully offline-capable auth.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <h2 class="section-title">How It Works</h2>
+  <p class="section-sub">From selfie to insight in seconds.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Employee Takes Selfie</h4>
+      <p>Via the Android app at any active company event or during face login.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>Backend Receives Photo</h4>
+      <p>Django compresses and forwards the image to the AI microservice over internal Docker network.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>AI Model Classifies</h4>
+      <p>FastAPI service runs the HuggingFace transformer pipeline and returns emotion label + top-3 probabilities.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Feedback Stored</h4>
+      <p>Result is saved in PostgreSQL linked to user, company, department, and event.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <h4>HR Views Analytics</h4>
+      <p>HR manager filters and explores aggregated emotion data across the organisation.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- USER ROLES -->
+<section id="roles">
+  <h2 class="section-title">Two Roles, One Platform</h2>
+  <p class="section-sub">Complete data isolation between organisations; separate navigation flows per role.</p>
+
+  <div class="roles-grid">
+    <div class="role-card">
+      <div class="role-header">
+        <div class="role-avatar ra-hr">👩‍💼</div>
+        <div>
+          <h3>HR Manager</h3>
+          <span class="role-tag">Management Role</span>
+        </div>
+      </div>
+      <ul class="role-list">
+        <li>Create and manage company events with assigned participants</li>
+        <li>View emotion analytics filtered by date, department, or event</li>
+        <li>Browse all employees in the company</li>
+        <li>Receive and respond to employee support tickets</li>
+        <li>Progress ticket status: Open → In Progress → Closed</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <div class="role-header">
+        <div class="role-avatar ra-emp">👨‍💻</div>
+        <div>
+          <h3>Employee</h3>
+          <span class="role-tag">Contributor Role</span>
+        </div>
+      </div>
+      <ul class="role-list">
+        <li>Submit selfie feedback for active events (one per event)</li>
+        <li>Log in with face biometrics for frictionless authentication</li>
+        <li>View personal active events</li>
+        <li>Open support requests to HR managers</li>
+        <li>Exchange real-time messages in ticket chat</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- AI MODEL SECTION -->
+<section id="ai">
+  <h2 class="section-title">AI Models Under the Hood</h2>
+  <p class="section-sub">Two independent AI components — emotion detection and face verification — running in a dedicated FastAPI microservice.</p>
+
+  <div class="ai-box">
+    <div class="ai-model">
+      <span class="ai-tag">HuggingFace Transformers</span>
+      <h3>Emotion Detection</h3>
+      <p>Model: <strong>dima806/facial_emotions_image_detection</strong><br/>
+      Image classification pipeline on CPU. Returns confidence scores for all 7 classes.</p>
+      <div class="emotion-list">
+        <span class="emotion-badge eb-happy">Happy</span>
+        <span class="emotion-badge eb-sad">Sad</span>
+        <span class="emotion-badge eb-angry">Angry</span>
+        <span class="emotion-badge eb-fear">Fear</span>
+        <span class="emotion-badge eb-disgust">Disgust</span>
+        <span class="emotion-badge eb-neutral">Neutral</span>
+        <span class="emotion-badge eb-surprise">Surprise</span>
+      </div>
+    </div>
+    <div class="ai-model">
+      <span class="ai-tag">FaceNet / PyTorch</span>
+      <h3>Face Authorization</h3>
+      <p><strong>MTCNN</strong> for multi-scale face detection + <strong>InceptionResnetV1</strong> (VGGFace2 pretrained) for 512-dim embedding. Cosine similarity with two thresholds:</p>
+      <div style="margin-top:.75rem; display:flex; flex-direction:column; gap:.4rem;">
+        <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+          <span style="color:var(--accent2)">≥ 0.75</span>
+          <span style="color:var(--muted)">→ YES (authenticated)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+          <span style="color:#ffa726">≥ 0.65</span>
+          <span style="color:var(--muted)">→ RETRY (unclear)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.88rem;">
+          <span style="color:var(--accent)">&lt; 0.65</span>
+          <span style="color:var(--muted)">→ NO (rejected)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <h2 class="section-title">System Architecture</h2>
+  <p class="section-sub">Three decoupled services communicating over a private Docker network, fronted by Nginx.</p>
+
+  <div class="arch-box">
+    <div class="arch-layers">
+      <div class="arch-layer">
+        <div class="arch-layer-icon">📱</div>
+        <div class="arch-layer-name">Android Client</div>
+        <div class="arch-layer-desc">Kotlin · Retrofit · CameraX · Jetpack Compose (analytics) · JWT stored in SharedPreferences</div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer-icon">🌐</div>
+        <div class="arch-layer-name">Nginx</div>
+        <div class="arch-layer-desc">Reverse proxy · HTTPS + WebSocket · Serves media files · 10 MB upload limit</div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer-icon">⚙️</div>
+        <div class="arch-layer-name">Django Backend</div>
+        <div class="arch-layer-desc">DRF REST API · Django Channels WebSocket · JWT auth · RBAC permissions · Celery async tasks</div>
+      </div>
+      <div class="arch-arrow">↓ ↓ ↓</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="arch-layer" style="flex-direction:column;text-align:center;padding:1rem;">
+          <div class="arch-layer-icon">🗄️</div>
+          <div class="arch-layer-name" style="min-width:auto;font-size:.88rem;">PostgreSQL 16</div>
+        </div>
+        <div class="arch-layer" style="flex-direction:column;text-align:center;padding:1rem;">
+          <div class="arch-layer-icon">⚡</div>
+          <div class="arch-layer-name" style="min-width:auto;font-size:.88rem;">Redis 7</div>
+          <div style="font-size:.75rem;color:var(--muted)">Cache · Channels · Celery</div>
+        </div>
+        <div class="arch-layer" style="flex-direction:column;text-align:center;padding:1rem;">
+          <div class="arch-layer-icon">🤖</div>
+          <div class="arch-layer-name" style="min-width:auto;font-size:.88rem;">AI Microservice</div>
+          <div style="font-size:.75rem;color:var(--muted)">FastAPI · Transformers · FaceNet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TECH STACK -->
+<section id="tech">
+  <h2 class="section-title">Technology Stack</h2>
+  <p class="section-sub">Modern, production-grade technologies chosen for performance and developer productivity.</p>
+
+  <div class="tech-grid">
+    <div class="tech-pill">
+      <span class="tech-pill-label">Backend Framework</span>
+      <span class="tech-pill-name">Django 6</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">REST API</span>
+      <span class="tech-pill-name">DRF 3.16</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Auth</span>
+      <span class="tech-pill-name">JWT (SimpleJWT)</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">WebSocket</span>
+      <span class="tech-pill-name">Django Channels</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Task Queue</span>
+      <span class="tech-pill-name">Celery 5</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Database</span>
+      <span class="tech-pill-name">PostgreSQL 16</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Cache / Broker</span>
+      <span class="tech-pill-name">Redis 7</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">AI Service</span>
+      <span class="tech-pill-name">FastAPI + Uvicorn</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Emotion Model</span>
+      <span class="tech-pill-name">HuggingFace Transformers</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Face Auth</span>
+      <span class="tech-pill-name">FaceNet-PyTorch</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Mobile</span>
+      <span class="tech-pill-name">Kotlin + Compose</span>
+    </div>
+    <div class="tech-pill">
+      <span class="tech-pill-label">Infrastructure</span>
+      <span class="tech-pill-name">Docker Compose</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BUSINESS BENEFITS -->
+<section id="benefits">
+  <h2 class="section-title">Business Value</h2>
+  <p class="section-sub">Measurable outcomes for HR teams and their organisations.</p>
+
+  <div class="benefits-grid">
+    <div class="benefit-card">
+      <h3>Objective Well-Being Measurement</h3>
+      <p>Replace subjective annual surveys with continuous, data-driven emotion snapshots tied to real company events.</p>
+    </div>
+    <div class="benefit-card accent2">
+      <h3>Early Problem Detection</h3>
+      <p>Spot negative emotion trends in departments before they escalate to absenteeism or turnover — and act early.</p>
+    </div>
+    <div class="benefit-card accent">
+      <h3>Frictionless Employee Experience</h3>
+      <p>A single selfie provides both authentication and mood data — no extra forms, no extra effort from employees.</p>
+    </div>
+    <div class="benefit-card">
+      <h3>Multi-Tenant Ready</h3>
+      <p>Full data isolation per company and department. Multiple organisations can run on the same deployment with zero cross-contamination.</p>
+    </div>
+    <div class="benefit-card accent2">
+      <h3>Instant HR Communication</h3>
+      <p>Real-time WebSocket ticket chat closes the feedback loop between employees and HR without leaving the app.</p>
+    </div>
+    <div class="benefit-card accent">
+      <h3>Scalable Microservice Design</h3>
+      <p>The AI service scales independently from the business logic layer — upgrade models or scale inference without touching the backend.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>EmotionAI</strong> — AI-Powered HR Emotion Analytics Platform</p>
+  <p style="margin-top:.5rem;">Built with Django · FastAPI · Kotlin · HuggingFace · FaceNet · Docker</p>
+</footer>
+
+</body>
+</html>
