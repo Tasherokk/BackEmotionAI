@@ -417,10 +417,48 @@
       bottom: 80px; right: -60px;
     }
 
+    /* ── ARCH THREE-COL ── */
+    .arch-three-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+
     @media (max-width: 640px) {
       .steps::before { display: none; }
       .hero-metrics { gap: 2rem; }
       .arch-layer-name { min-width: auto; }
+
+      nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+
+      section { padding: 64px 1.25rem; }
+
+      .metric-value { font-size: 1.8rem; }
+      .hero-badge { font-size: .72rem; padding: .3rem .9rem; }
+
+      .arch-box { padding: 1.25rem; }
+      .arch-three-col { grid-template-columns: 1fr; }
+
+      .card,
+      .feature-card,
+      .role-card,
+      .benefit-card { padding: 1.25rem; }
+
+      .ai-box { padding: 1.25rem; gap: 1.5rem; }
+
+      .tech-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+
+      .btn { padding: .7rem 1.4rem; font-size: .92rem; }
+      .hero-cta { gap: .75rem; }
+
+      .step { padding: 0 .5rem; }
+    }
+
+    @media (max-width: 400px) {
+      .hero-metrics { flex-direction: column; gap: 1.25rem; }
+      .arch-three-col { grid-template-columns: 1fr; }
+      .tech-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -692,7 +730,7 @@
         <div class="arch-layer-desc">DRF REST API · Django Channels WebSocket · JWT auth · RBAC permissions · Celery async tasks</div>
       </div>
       <div class="arch-arrow">↓ ↓ ↓</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+      <div class="arch-three-col">
         <div class="arch-layer" style="flex-direction:column;text-align:center;padding:1rem;">
           <div class="arch-layer-icon">🗄️</div>
           <div class="arch-layer-name" style="min-width:auto;font-size:.88rem;">PostgreSQL 16</div>
